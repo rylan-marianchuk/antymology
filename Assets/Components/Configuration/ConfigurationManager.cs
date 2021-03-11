@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class ConfigurationManager : Singleton<ConfigurationManager>
 {
+    /// <summary>
+    /// The boost in health an ant will receive after eating a mulch block
+    /// </summary>
+    public int mulchBoost = 50;
+
+
+
 
     /// <summary>
     /// The seed for world generation.
@@ -49,4 +56,6 @@ public class ConfigurationManager : Singleton<ConfigurationManager>
     /// The radius of each acidic region
     /// </summary>
     public int Conatiner_Sphere_Radius = 20;
+
+
 }
