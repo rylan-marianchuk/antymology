@@ -26,7 +26,7 @@ public class ExtendedFlycam : MonoBehaviour
 	*/
 
 	public float cameraSensitivity = 90;
-	public float climbSpeed = 4;
+	public float climbSpeed = 8;
 	public float normalMoveSpeed = 10;
 	public float slowMoveFactor = 0.25f;
 	public float fastMoveFactor = 3;

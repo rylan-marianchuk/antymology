@@ -6,13 +6,15 @@ namespace Antymology.Agents
 {
     public class Ant : MonoBehaviour
     {
-        protected int health = 0;
+        protected int totalHealth = 0;
+        protected int currhealth;
 
+        protected bool dead = false;
 
         /// <summary>
         /// Integer vector of this agents position
         /// </summary>
-        protected Vector3 position;
+        protected Vector3Int position;
 
 
         /// <summary>
@@ -21,16 +23,32 @@ namespace Antymology.Agents
         protected Colony colony;
 
 
+
+        public Ant()
+        {
+            this.currhealth = this.totalHealth;
+        }
+
         public void consumeMulch()
         {
-            this.health += ConfigurationManager.Instance.mulchBoost;
-            Terrain.WorldManager.Instance.SetBlock((int)position.x, (int)position.y, (int)position.z, new Terrain.AirBlock());
+            this.currhealth = totalHealth;
+            Terrain.WorldManager.Instance.SetBlock(position.x, position.y-1, position.z, new Terrain.AirBlock());
+            this.setPosition(new Vector3Int(position.x, position.y - 1, position.z));
         }
 
         public void updateHealth(int amount)
         {
-            this.health += amount;
+            if (this.currhealth + amount < 0)
+                this.dead = true;
+
+            if (this.currhealth + amount > totalHealth)
+                this.currhealth = totalHealth;
+            else
+                this.currhealth += amount;
         }
+
+        public void setPosition(Vector3Int p) { this.position = p; }
+        public void setColony(Colony c) { this.colony = c; }
     }
 }
 

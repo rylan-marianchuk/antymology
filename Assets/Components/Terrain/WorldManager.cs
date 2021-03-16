@@ -15,6 +15,7 @@ namespace Antymology.Terrain
         /// The prefab containing the ant.
         /// </summary>
         public GameObject antPrefab;
+        public GameObject queenAntPrefab;
 
         /// <summary>
         /// The material used for eech block.
@@ -83,12 +84,13 @@ namespace Antymology.Terrain
             GenerateAnts();
         }
 
+        public Agents.Colony c;
         /// <summary>
         /// TO BE IMPLEMENTED BY YOU
         /// </summary>
         private void GenerateAnts()
         {
-            throw new NotImplementedException();
+            c = new Agents.Colony();
         }
 
         #endregion

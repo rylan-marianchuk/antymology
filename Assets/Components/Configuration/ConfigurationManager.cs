@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class ConfigurationManager : Singleton<ConfigurationManager>
 {
-    /// <summary>
-    /// The boost in health an ant will receive after eating a mulch block
-    /// </summary>
-    public int mulchBoost = 50;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public int antsPerColony = 20;
 
 
 

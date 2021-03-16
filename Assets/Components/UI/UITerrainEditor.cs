@@ -116,6 +116,11 @@ namespace Antymology.UI
                 ReplaceBlockCursor();
                 currentBlockType = oldBlockType;
             }
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                WorldManager.Instance.c.queen.MakeNestBlock();
+            }
         }
 
     }

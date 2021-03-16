@@ -11,8 +11,8 @@ namespace Antymology.Agents
         public void MakeNestBlock()
         {
             // Decrement health by one third
-            this.updateHealth(-this.health / 3);
-            Terrain.WorldManager.Instance.SetBlock((int)position.x, (int)position.y, (int)position.z, new Terrain.NestBlock());
+            this.updateHealth(-this.currhealth / 3);
+            Terrain.WorldManager.Instance.SetBlock((int)position.x, (int)position.y-1, (int)position.z, new Terrain.NestBlock());
             colony.incrementNestBlocks();
         }
     }
