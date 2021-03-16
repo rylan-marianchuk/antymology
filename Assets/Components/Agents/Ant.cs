@@ -23,17 +23,26 @@ namespace Antymology.Agents
         protected Colony colony;
 
 
+        /// <summary>
+        /// A reference to the nervous system the ant has
+        /// </summary>
+        protected NervousSystem ns;
 
         public Ant()
         {
             this.currhealth = this.totalHealth;
+
+            // Create the nervous system
+            ns = new NervousSystem();
         }
 
-        public void consumeMulch()
+        public void consumeBlock()
         {
-            this.currhealth = totalHealth;
+            if (Terrain.WorldManager.Instance.GetBlock(position.x, position.y - 1, position.z).GetType() == typeof(Terrain.MulchBlock))
+                this.currhealth = totalHealth;
             Terrain.WorldManager.Instance.SetBlock(position.x, position.y-1, position.z, new Terrain.AirBlock());
             this.setPosition(new Vector3Int(position.x, position.y - 1, position.z));
+            
         }
 
         public void updateHealth(int amount)
@@ -47,8 +56,66 @@ namespace Antymology.Agents
                 this.currhealth += amount;
         }
 
-        public void setPosition(Vector3Int p) { this.position = p; }
+        public void setPosition(Vector3Int p) 
+        { 
+            this.position = p;
+            this.gameObject.transform.position = new Vector3Int(p.x, p.y - 1, p.z);
+        }
+
         public void setColony(Colony c) { this.colony = c; }
+
+
+        /// <summary>
+        /// A very important function. Compute the neural network within the ant to choose an action.
+        /// 
+        /// First go over restrictions for immediate actions to constrain the search of the neuroevolution
+        /// </summary>
+        public void Act()
+        {
+            // Exchange health
+
+
+            // Consume mulch
+
+            // The output layer of the nervous system
+            //  byte[]  {u, r, d, l, consume, null}
+            int todo = ns.indexOfMax(ns.perceive());
+
+            if (todo == 0)
+            {
+                Move(new Vector2Int(0, 0));
+            }
+            else if (todo == 1)
+            {
+                Move(new Vector2Int(0, 0));
+            }
+            else if (todo == 2)
+            {
+                Move(new Vector2Int(0, 0));
+            }
+            else if (todo == 3)
+            {
+                Move(new Vector2Int(0, 0));
+            }
+            else if (todo == 4)
+            {
+                consumeBlock();
+            }
+            else
+            {
+                // Do nothing
+            }
+
+
+        }
+
+
+
+        protected void Move(Vector2Int dir)
+        {
+
+        }
+
     }
 }
 
