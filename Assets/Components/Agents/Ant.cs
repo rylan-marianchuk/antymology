@@ -155,14 +155,6 @@ namespace Antymology.Agents
             this.setPosition(new Vector3Int(position.x + dir.x, airHeight, position.z + dir.y));
         }
 
-
-        public void MakeNestBlock()
-        {
-            // Decrement health by one third
-            this.updateHealth(-this.currhealth / 3);
-            Terrain.WorldManager.Instance.SetBlock((int)position.x, (int)position.y - 1, (int)position.z, new Terrain.NestBlock());
-            colony.incrementNestBlocks();
-        }
     }
 }
 

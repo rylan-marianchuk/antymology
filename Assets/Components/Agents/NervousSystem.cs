@@ -6,6 +6,25 @@ public class NervousSystem
 {
     public struct Connection
     {
+        public Connection(int id_in_, int id_out_, bool en, int innovate)
+        {
+            id_in = id_in_;
+            id_out = id_out_;
+            weight = Random.Range(-5f, 5f);
+            enabled = en;
+            innovationNum = innovate;
+        }
+
+        public Connection(int id_in_, int id_out_, float weight, bool en, int innovate)
+        {
+            id_in = id_in_;
+            id_out = id_out_;
+            this.weight = weight;
+            enabled = en;
+            innovationNum = innovate;
+        }
+
+
         public int id_in;
         public int id_out;
         public float weight;
@@ -13,20 +32,24 @@ public class NervousSystem
         public int innovationNum;
     } 
 
-    public struct Genome
-    {
-        public List<char> nodes;
-        public List<Connection> connections;
 
-
-    }
+    // The data structures for the NEAT genome
+    public List<char> nodes;
+    public List<Connection> connections;
 
 
     private float[,] input;
 
 
-    public NervousSystem()
+    public NervousSystem(List<char> nodes, List<Connection> connections)
     {
+        this.nodes = new List<char>();
+        this.connections = new List<Connection>();
+        foreach (var c in nodes)
+            this.nodes.Add(c);
+
+        foreach (var c in connections)
+            this.connections.Add(c);
 
     }
 
