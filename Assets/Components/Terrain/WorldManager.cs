@@ -70,6 +70,8 @@ namespace Antymology.Terrain
                 ConfigurationManager.Instance.World_Diameter];
         }
 
+
+        public Agents.Colony c;
         /// <summary>
         /// Called after every awake has been called.
         /// </summary>
@@ -82,15 +84,14 @@ namespace Antymology.Terrain
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
             GenerateAnts();
+            c = new Agents.Colony();
         }
 
-        public Agents.Colony c;
         /// <summary>
         /// TO BE IMPLEMENTED BY YOU
         /// </summary>
         private void GenerateAnts()
         {
-            c = new Agents.Colony();
         }
 
         #endregion

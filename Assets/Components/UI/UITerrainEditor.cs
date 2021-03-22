@@ -121,6 +121,44 @@ namespace Antymology.UI
             {
                 WorldManager.Instance.c.queen.MakeNestBlock();
             }
+
+
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                foreach(var A in WorldManager.Instance.c.colony)
+                {
+                    A.Act(0);
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                foreach (var A in WorldManager.Instance.c.colony)
+                {
+                    A.Act(1);
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                foreach (var A in WorldManager.Instance.c.colony)
+                {
+                    A.Act(2);
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                foreach (var A in WorldManager.Instance.c.colony)
+                {
+                    A.Act(3);
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.Comma))
+            {
+                Debug.Log("Consumed Block");
+                foreach (var A in WorldManager.Instance.c.colony)
+                {
+                    A.Act(4);
+                }
+            }
         }
 
     }

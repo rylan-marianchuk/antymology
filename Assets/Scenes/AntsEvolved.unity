@@ -193,7 +193,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 10.0142565, y: 168216260, z: 4.5448167e+30, w: 1.8727993e+31}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -374,7 +374,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   antPrefab: {fileID: 3017594799869341322, guid: 1cb098cb02986c74a8a49be670d5c0e3,
     type: 3}
+  queenAntPrefab: {fileID: 3964531562153704153, guid: 4b08cc3b7d1559a458071dd7efbc4052,
+    type: 3}
   blockMaterial: {fileID: 2100000, guid: 4db9d8fce1a69b74f81daf1375c9ed88, type: 2}
+  c: {fileID: 0}
 --- !u!4 &964896558
 Transform:
   m_ObjectHideFlags: 0
@@ -401,7 +404,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8d15e78258e4f2419b563e068e6f42d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mulchBoost: 50
   antsPerColony: 20
   Seed: 1337
   World_Diameter: 16

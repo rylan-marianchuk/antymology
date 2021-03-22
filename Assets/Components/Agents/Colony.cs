@@ -7,7 +7,7 @@ namespace Antymology.Agents
 { 
     public class Colony : MonoBehaviour
     {
-        private List<Ant> colony;
+        public List<Ant> colony;
 
         public QueenAnt queen;
 
@@ -72,14 +72,29 @@ namespace Antymology.Agents
                 this.queen = obj.GetComponent<QueenAnt>();
             }
             else
-                obj = Instantiate(Terrain.WorldManager.Instance.antPrefab, new Vector3(c.x + rx - 0.6f, y - 1.3f, c.y + rz + 0.1f), Quaternion.identity);
+                obj = Instantiate(Terrain.WorldManager.Instance.antPrefab, new Vector3(c.x + rx - 0.0f, y - 0.0f, c.y + rz + 0.0f), Quaternion.identity);
             
                 
             obj.GetComponent<Ant>().setPosition(new Vector3Int(c.x + rx, y, c.y + rz));
             obj.GetComponent<Ant>().setColony(this);
-            obj.GetComponent<Ant>().consumeMulch();
+            //obj.GetComponent<Ant>().MakeNestBlock();
             this.colony.Add(obj.GetComponent<Ant>());
         }
+
+
+
+        /// <param name="p">World Position</param>
+        /// <returns>Return true if more than one ant is at this position</returns>
+        public bool isOtherAntHere(Vector3Int p)
+        {
+            int count = 0;
+            foreach (var ant in colony)
+            {
+                if (ant.getPosition() == p) count++;
+            }
+            return count >= 2;
+        }
     }
+
 }
 
