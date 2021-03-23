@@ -2,92 +2,184 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NervousSystem
+namespace Antymology.Agents
 {
-    public struct Connection
+    public class NervousSystem
     {
-        public Connection(int id_in_, int id_out_, bool en, int innovate)
+        public struct Connection
         {
-            id_in = id_in_;
-            id_out = id_out_;
-            weight = Random.Range(-5f, 5f);
-            enabled = en;
-            innovationNum = innovate;
-        }
-
-        public Connection(int id_in_, int id_out_, float weight, bool en, int innovate)
-        {
-            id_in = id_in_;
-            id_out = id_out_;
-            this.weight = weight;
-            enabled = en;
-            innovationNum = innovate;
-        }
-
-
-        public int id_in;
-        public int id_out;
-        public float weight;
-        public bool enabled;
-        public int innovationNum;
-    } 
-
-
-    // The data structures for the NEAT genome
-    public List<char> nodes;
-    public List<Connection> connections;
-
-
-    private float[,] input;
-
-
-    public NervousSystem(List<char> nodes, List<Connection> connections)
-    {
-        this.nodes = new List<char>();
-        this.connections = new List<Connection>();
-        foreach (var c in nodes)
-            this.nodes.Add(c);
-
-        foreach (var c in connections)
-            this.connections.Add(c);
-
-    }
-
-
-
-    /// <summary>
-    /// Computed on each time step, take in input from the surroundings and return the output
-    /// Feed forward (run) the nervous system from end to end
-    /// </summary>
-    /// <returns>
-            // The output layer of the nervous system
-            //  byte[]  {u, r, d, l, consume, null}
-    /// </returns>
-    public float[] perceive()
-    {
-        return new float[6];
-    }
-
-
-
-    /// <summary>
-    /// Return the index of max in byte array
-    /// </summary>
-    /// <param name="todo"> length 6</param>
-    /// <returns></returns>
-    public int indexOfMax(float[] todo)
-    {
-        int maxi = 0;
-        float m = todo[0];
-
-        for (int i = 1; i < todo.Length; i++)
-        {
-            if (todo[i] > m)
+            public Connection(int id_in_, int id_out_, bool en, int innovate)
             {
-                maxi = i;
-                m = todo[i];
+                id_in = id_in_;
+                id_out = id_out_;
+                weight = Random.Range(-3f, 3f);
+                enabled = en;
+                innovationNum = innovate;
+            }
+
+            public Connection(int id_in_, int id_out_, float weight, bool en, int innovate)
+            {
+                id_in = id_in_;
+                id_out = id_out_;
+                this.weight = weight;
+                enabled = en;
+                innovationNum = innovate;
+            }
+
+
+            public int id_in;
+            public int id_out;
+            public float weight;
+            public bool enabled;
+            public int innovationNum;
+        }
+
+        public struct Node
+        {
+            // Node: 
+            // char c \in {'i', 'h', 'o'}
+            // float current value
+            // 'i': input, 'h': hidden, 'o': output
+            public char c;
+            public float val;
+            public Node(char _c, float _val)
+            {
+                this.c = _c;
+                this.val = _val;
+            }
+
+            public Node(char _c)
+            {
+                this.c = _c;
+                this.val = 0;
+            }
+
+            public void setVal(float v) { this.val = v; }
+        }
+
+        // The data structures for the NEAT genome
+
+        public List<Node> nodes;
+        public List<Connection> connections;
+
+        public Ant antOn;
+
+        private int inputGridLength;
+
+        public NervousSystem(List<Node> nodes, List<Connection> connections)
+        {
+            this.nodes = new List<Node>();
+            this.connections = new List<Connection>();
+            foreach (var c in nodes)
+                this.nodes.Add(c);
+
+            foreach (var c in connections)
+                this.connections.Add(c);
+
+        }
+
+        public NervousSystem()
+        {
+            this.inputGridLength = ConfigurationManager.Instance.inputGridSize;
+            this.nodes = new List<Node>(inputGridLength * inputGridLength);
+            // Adding the input nodes
+            for (int i = 0; i < inputGridLength * inputGridLength; i++)
+            {
+                nodes.Add(new Node('i'));
+            }
+            // Adding the output nodes
+            for (int i = 0; i < 6; i++)
+            {
+                nodes.Add(new Node('o'));
             }
         }
-        return maxi;
+
+
+        /// <summary>
+        /// Computed on each time step, take in input from the surroundings and return the output
+        /// Feed forward (run) the nervous system from end to end
+        /// 
+        /// Activation:  1 / 1 + exp(-4.5x)
+        /// </summary>
+        /// <returns>
+        // The output layer of the nervous system
+        //  byte[]  {u, r, d, l, consume, null}
+        /// </returns>
+        public float[] perceive()
+        {
+            int off = (this.inputGridLength - 1) / 2;
+            int i = 0;
+            // Retrieve input values - get from environment
+            for (int x = -off; x <= off; x++)
+            {
+                for (int z = -off; z <= off; z++)
+                {
+                    nodes[i].setVal(perceiveAtPixel(new Vector2(this.antOn.getPosition().x + x, this.antOn.getPosition().z + z)));
+                    i++;
+                }
+            }
+
+            // Depth first search from the output nodes to grab value. Update node and weight activation along the way
+
+            return new float[6];
+        }
+
+
+        private float perceiveAtPixel(Vector2 topDownWorldPos)
+        {
+            float queenIntensity = 1;
+            float mulchIntensity = 0.5f;
+            float elseIntensity = -0.5f;
+
+
+            return 0f;
+        }
+
+
+
+        /// <summary>
+        /// Return the index of max in byte array
+        /// </summary>
+        /// <param name="todo"> length 6</param>
+        /// <returns></returns>
+        public int indexOfMax(float[] todo)
+        {
+            int maxi = 0;
+            float m = todo[0];
+
+            for (int i = 1; i < todo.Length; i++)
+            {
+                if (todo[i] > m)
+                {
+                    maxi = i;
+                    m = todo[i];
+                }
+            }
+            return maxi;
+        }
+
+
+
+        /// <summary>
+        /// Allow for permanent storage of this genome by writing to a file
+        /// </summary>
+        public void writeGenome2File()
+        {
+
+        }
+
+
+        /// <summary>
+        /// Activation for neural network
+        /// 
+        /// Activation:  1 / 1 + exp(-4.5x)
+        /// </summary>
+        /// <returns></returns>
+        private float activation(float weightedSum)
+        {
+            return 1f / (1 + Mathf.Exp(-4.5f * weightedSum));
+        }
+
     }
 }
+

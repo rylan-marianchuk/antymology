@@ -5,12 +5,7 @@ using UnityEngine;
 public class ConfigurationManager : Singleton<ConfigurationManager>
 {
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public int antsPerColony = 20;
-
-
+    [Header("World Generation")]
 
     /// <summary>
     /// The seed for world generation.
@@ -56,6 +51,41 @@ public class ConfigurationManager : Singleton<ConfigurationManager>
     /// The radius of each acidic region
     /// </summary>
     public int Conatiner_Sphere_Radius = 20;
+
+    [Header("Neuro evolution parameters")]
+
+    /// <summary>
+    /// Ants per colony
+    /// </summary>
+    public int antsPerColony = 20;
+
+
+    /// <summary>
+    /// Radius of blocks around the ant it will take as input into its nervous system
+    /// MUST be an odd number
+    /// </summary>
+    public int inputGridSize = 7;
+
+    /// <summary>
+    /// Number of evolving simultaneous colonies in the world
+    /// </summary>
+    public int coloniesPerWorld = 2;
+
+
+    /// <summary>
+    /// Initial total health
+    /// </summary>
+    public int initialHealth = 1000;
+
+    /// <summary>
+    /// Reduction of Health per frame
+    /// </summary>
+    public int healthReduction = 1;
+
+    public float connectionMutationRate = 0.3f;
+
+    public float nodeMutationRate = 0.2f;
+
 
 
 }
