@@ -61,6 +61,12 @@ public class ConfigurationManager : Singleton<ConfigurationManager>
 
 
     /// <summary>
+    /// Max distance the ants may spawn from its center
+    /// </summary>
+    public int spawnRadius = 20;
+
+
+    /// <summary>
     /// Radius of blocks around the ant it will take as input into its nervous system
     /// MUST be an odd number
     /// </summary>

@@ -92,6 +92,8 @@ namespace Antymology.Agents
             {
                 nodes.Add(new Node('o'));
             }
+            // Add a single random connection.
+            NeuroEvolution.MutateByConnection(this);
         }
 
 

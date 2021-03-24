@@ -11,16 +11,34 @@ namespace Antymology.Agents
 
         public QueenAnt queen;
 
-        private bool allDead = false;
+        public short colonyId;
 
         private int totalNestBlocks = 0;
 
-        public Colony(int size)
+
+        /// <summary>
+        /// Spawn an ant colony in the specified world quadrant. Default split of the world into 1/4 sections
+        /// </summary>
+        /// <param name="worldQuadrant"></param>
+        public Colony(short worldQuadrant, Colony singleParent)
         {
             colony = new List<Ant>();
-            this.spawnColony(size);
+            colonyId = worldQuadrant;
+            this.spawnColony(ConfigurationManager.Instance.spawnRadius, singleParent);
         }
 
+
+        /// <summary>
+        /// Initial best colony to begin the genetic search
+        /// </summary>
+        public Colony()
+        {
+            colony = new List<Ant>();
+            for (int i = 0; i < ConfigurationManager.Instance.antsPerColony; i++)
+            {
+                colony.Add(new Ant());
+            }
+        }
 
         public void incrementNestBlocks()
         {
@@ -32,22 +50,76 @@ namespace Antymology.Agents
             return this.totalNestBlocks;
         }
 
-        public bool isAllDead() { return this.allDead;  }
-
-        public void spawnColony(int spawnRadius)
+        public bool isAllDead() 
         {
+            foreach (var ant in this.colony)
+            {
+                if (!ant.dead) return false;
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// Create a new colony based off a single parent for now.
+        /// 
+        /// Mutate each nervous system by the proper probabilities before passing it on.
+        /// </summary>
+        /// <param name="spawnRadius"></param>
+        /// <param name="singleParent"></param>
+        /// <param name="randomChoice"></param>
+        public void spawnColony(int spawnRadius, Colony singleParent, bool randomChoice = false)
+        {
+
+            int l = ConfigurationManager.Instance.Chunk_Diameter * ConfigurationManager.Instance.World_Diameter;
+            Vector2Int c;
             // Choose a center location in this colony
-            Vector2Int c = new Vector2Int(Random.Range(spawnRadius / 2, ConfigurationManager.Instance.Chunk_Diameter * ConfigurationManager.Instance.World_Diameter - spawnRadius / 2),
-                Random.Range(spawnRadius / 2, ConfigurationManager.Instance.Chunk_Diameter * ConfigurationManager.Instance.World_Diameter - spawnRadius / 2));
+            if (randomChoice)
+            {
+                c = new Vector2Int(Random.Range(spawnRadius / 2, l/2 - spawnRadius / 2),
+                                   Random.Range(spawnRadius / 2, l/2 - spawnRadius / 2));
+            }
+            else
+            {
+                c = new Vector2Int(l/4, l/4);
+                if (colonyId == 1) c.y += l/2;
+                else if (colonyId == 2)
+                {
+                    c.y += l/2;
+                    c.x += l/2;
+                }
+                else if (colonyId == 3) c.x += l/2;
+            }
 
             
             // Spawn all ants
             for (int i = 0; i < ConfigurationManager.Instance.antsPerColony; i++)
             {
-                spawnAnt(c, spawnRadius, false);
+                if (Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+                {
+                    NeuroEvolution.MutateByConnection(singleParent.colony[i].getNervousSystem());
+                }
+                else if (Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
+                {
+                    NeuroEvolution.MutateByNode(singleParent.colony[i].getNervousSystem());
+                }
+
+                NervousSystem newNS = new NervousSystem(singleParent.colony[i].getNervousSystem().nodes, singleParent.colony[i].getNervousSystem().connections);
+                spawnAnt(c, spawnRadius, newNS, false);
             }
+
             // Spawning the queen
-            spawnAnt(c, spawnRadius, true);
+            if (Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+            {
+                NeuroEvolution.MutateByConnection(singleParent.queen.getNervousSystem());
+            }
+            else if (Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
+            {
+                NeuroEvolution.MutateByNode(singleParent.queen.getNervousSystem());
+            }
+            NervousSystem newNSqueen = new NervousSystem(singleParent.queen.getNervousSystem().nodes, singleParent.queen.getNervousSystem().connections);
+            
+            spawnAnt(c, spawnRadius, newNSqueen, true);
 
         }
 
@@ -57,10 +129,10 @@ namespace Antymology.Agents
         /// </summary>
         /// <param name="c">colonyCenter</param>
         /// <param name="isQueen"></param>
-        private void spawnAnt(Vector2Int c, int spawnRadius, bool isQueen)
+        private void spawnAnt(Vector2Int c, int spawnRadius, NervousSystem toHave, bool isQueen)
         {
-            int rx = Random.Range(-spawnRadius / 2, spawnRadius / 2);
-            int rz = Random.Range(-spawnRadius / 2, spawnRadius / 2);
+            int rx = Random.Range(-spawnRadius, spawnRadius);
+            int rz = Random.Range(-spawnRadius, spawnRadius);
 
             // Finding the highest airblock here
             int y = 0;
@@ -71,16 +143,18 @@ namespace Antymology.Agents
             GameObject obj;
             if (isQueen)
             {
-                obj = Instantiate(Terrain.WorldManager.Instance.queenAntPrefab, new Vector3(c.x + rx - 1.6f, y - 2.33f, c.y + rz + 0.295f), Quaternion.identity);
+                obj = Instantiate(Terrain.WorldManager.Instance.queenAntPrefab, new Vector3(c.x + rx, y, c.y + rz), Quaternion.identity);
                 this.queen = obj.GetComponent<QueenAnt>();
             }
             else
-                obj = Instantiate(Terrain.WorldManager.Instance.antPrefab, new Vector3(c.x + rx - 0.0f, y - 0.0f, c.y + rz + 0.0f), Quaternion.identity);
+                obj = Instantiate(Terrain.WorldManager.Instance.antPrefab, new Vector3(c.x + rx, y, c.y + rz), Quaternion.identity);
             
                 
             obj.GetComponent<Ant>().setPosition(new Vector3Int(c.x + rx, y, c.y + rz));
             obj.GetComponent<Ant>().setColony(this);
-            //obj.GetComponent<Ant>().MakeNestBlock();
+            obj.GetComponent<Ant>().setNervousSystem(toHave);
+            obj.GetComponent<Ant>().colonyId = this.colonyId;
+            
             this.colony.Add(obj.GetComponent<Ant>());
         }
 

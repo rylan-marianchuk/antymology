@@ -19,7 +19,7 @@ namespace Antymology.Agents
         /// An existing connection is split and the new node placed where the old connection was 
         /// </summary>
         /// <returns></returns>
-        public void MutateByNode(NervousSystem toMutate)
+        public static void MutateByNode(NervousSystem toMutate)
         {
             // Randomly choose a connection
             int randomI = Random.Range(0, toMutate.connections.Count);
@@ -42,7 +42,7 @@ namespace Antymology.Agents
         /// a single new connection gene with a random weight is added connecting two previously unconnected nodes
         /// </summary>
         /// <returns></returns>
-        public void MutateByConnection(NervousSystem toMutate)
+        public static void MutateByConnection(NervousSystem toMutate)
         {
             // Randomly find two unconnected nodes
 
@@ -75,7 +75,7 @@ namespace Antymology.Agents
 
 
 
-        private bool connectionExists(int i, int j, NervousSystem ns)
+        private static bool connectionExists(int i, int j, NervousSystem ns)
         {
             foreach (var c in ns.connections)
             {

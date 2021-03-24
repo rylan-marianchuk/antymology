@@ -117,48 +117,52 @@ namespace Antymology.UI
                 currentBlockType = oldBlockType;
             }
 
-            if (Input.GetKeyDown(KeyCode.E))
+            foreach (var c in WorldManager.Instance.colonies)
             {
-                WorldManager.Instance.c.queen.MakeNestBlock();
-            }
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    c.queen.MakeNestBlock();
+                }
 
 
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                foreach(var A in WorldManager.Instance.c.colony)
+                if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
-                    A.Act(0);
+                    foreach (var A in c.colony)
+                    {
+                        A.Act(0);
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    foreach (var A in c.colony)
+                    {
+                        A.Act(1);
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.DownArrow))
+                {
+                    foreach (var A in c.colony)
+                    {
+                        A.Act(2);
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.LeftArrow))
+                {
+                    foreach (var A in c.colony)
+                    {
+                        A.Act(3);
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.Comma))
+                {
+                    Debug.Log("Consumed Block");
+                    foreach (var A in c.colony)
+                    {
+                        A.Act(4);
+                    }
                 }
             }
-            if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                foreach (var A in WorldManager.Instance.c.colony)
-                {
-                    A.Act(1);
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                foreach (var A in WorldManager.Instance.c.colony)
-                {
-                    A.Act(2);
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                foreach (var A in WorldManager.Instance.c.colony)
-                {
-                    A.Act(3);
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.Comma))
-            {
-                Debug.Log("Consumed Block");
-                foreach (var A in WorldManager.Instance.c.colony)
-                {
-                    A.Act(4);
-                }
-            }
+            
         }
 
     }

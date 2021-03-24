@@ -29,6 +29,7 @@ namespace Antymology.Agents
         protected NervousSystem ns;
 
         public int timeSinceLastAction = 0;
+        public short colonyId;
 
         public Ant()
         {
@@ -75,10 +76,12 @@ namespace Antymology.Agents
         public void setPosition(Vector3Int p) 
         { 
             this.position = p;
-            this.gameObject.transform.position = new Vector3(p.x - 0.0f, p.y - 0.0f, p.z + 0.0f);
+            this.gameObject.transform.position = new Vector3(p.x, p.y, p.z);
         }
 
         public void setColony(Colony c) { this.colony = c; }
+        public void setNervousSystem(NervousSystem n) { this.ns = n; }
+        public NervousSystem getNervousSystem() { return this.ns; }
 
 
         /// <summary>

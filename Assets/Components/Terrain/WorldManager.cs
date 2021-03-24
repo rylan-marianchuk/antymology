@@ -70,7 +70,12 @@ namespace Antymology.Terrain
                 ConfigurationManager.Instance.World_Diameter];
         }
 
+        /// <summary>
+        /// The unit of the evolutionary search. Keeps the top colony at the end of each generation.
+        /// </summary>
+        public Agents.Colony topColony;
 
+        public long generation = 0;
         public List<Agents.Colony> colonies;
         /// <summary>
         /// Called after every awake has been called.
@@ -83,26 +88,29 @@ namespace Antymology.Terrain
             Camera.main.transform.position = new Vector3(0 / 2, Blocks.GetLength(1), 0);
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
+            topColony = new Agents.Colony();
             GenerateAnts();
             
         }
 
-        /// <summary>
-        /// TO BE IMPLEMENTED BY YOU
-        /// </summary>
+
+
+
         private void GenerateAnts()
         {
-            for (int i = 0; i < ConfigurationManager.Instance.coloniesPerWorld; i++)
+            for (short i = 0; i < ConfigurationManager.Instance.coloniesPerWorld; i++)
             {
-                colonies.Add(new Agents.Colony(ConfigurationManager.Instance.antsPerColony));
+                colonies.Add(new Agents.Colony(i, topColony));
             }
             
         }
 
         private void FixedUpdate()
         {
+            
             // Update all ants
 
+            // Must determine when to respawn everything
             bool allDead = true;
             // If all colonies dead, regenerate world and colonies
             foreach (Agents.Colony colony in colonies)
@@ -120,13 +128,21 @@ namespace Antymology.Terrain
             if (allDead)
             {
                 // TODO Choose the best nervous system to keep
+                int bestNestSize = topColony.getTotalNestBlocks();
+                foreach (Agents.Colony colony in colonies)
+                {
+                    if (colony.getTotalNestBlocks() > bestNestSize)
+                    {
+                        topColony = colony;
+                        bestNestSize = colony.getTotalNestBlocks();
+                    }
+                }
 
                 colonies.Clear();
+                generation++;
 
-
+                // Reset the world.
                 RNG = new System.Random((int)Time.time);
-
-                // Generate new simplex noise generator
                 SimplexNoise = new SimplexNoise((int)Time.time);
                 GenerateData();
                 GenerateChunks();

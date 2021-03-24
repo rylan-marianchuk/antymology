@@ -193,7 +193,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 0.11328125, y: 0.03125, z: 0.02734375, w: -0.03125}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -377,7 +377,9 @@ MonoBehaviour:
   queenAntPrefab: {fileID: 3964531562153704153, guid: 4b08cc3b7d1559a458071dd7efbc4052,
     type: 3}
   blockMaterial: {fileID: 2100000, guid: 4db9d8fce1a69b74f81daf1375c9ed88, type: 2}
-  c: {fileID: 0}
+  topColony: {fileID: 0}
+  generation: 0
+  colonies: []
 --- !u!4 &964896558
 Transform:
   m_ObjectHideFlags: 0
@@ -404,7 +406,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8d15e78258e4f2419b563e068e6f42d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  antsPerColony: 20
   Seed: 1337
   World_Diameter: 16
   World_Height: 4
@@ -414,3 +415,11 @@ MonoBehaviour:
   Acidic_Region_Radius: 5
   Number_Of_Conatiner_Spheres: 5
   Conatiner_Sphere_Radius: 10
+  antsPerColony: 20
+  spawnRadius: 20
+  inputGridSize: 7
+  coloniesPerWorld: 4
+  initialHealth: 1000
+  healthReduction: 1
+  connectionMutationRate: 0.3
+  nodeMutationRate: 0.2
