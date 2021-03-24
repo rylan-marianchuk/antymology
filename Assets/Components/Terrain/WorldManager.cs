@@ -71,7 +71,7 @@ namespace Antymology.Terrain
         }
 
 
-        public Agents.Colony c;
+        public List<Agents.Colony> colonies;
         /// <summary>
         /// Called after every awake has been called.
         /// </summary>
@@ -84,7 +84,7 @@ namespace Antymology.Terrain
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
             GenerateAnts();
-            c = new Agents.Colony();
+            
         }
 
         /// <summary>
@@ -92,6 +92,46 @@ namespace Antymology.Terrain
         /// </summary>
         private void GenerateAnts()
         {
+            for (int i = 0; i < ConfigurationManager.Instance.coloniesPerWorld; i++)
+            {
+                colonies.Add(new Agents.Colony(ConfigurationManager.Instance.antsPerColony));
+            }
+            
+        }
+
+        private void FixedUpdate()
+        {
+            // Update all ants
+
+            bool allDead = true;
+            // If all colonies dead, regenerate world and colonies
+            foreach (Agents.Colony colony in colonies)
+            {
+
+                if (!colony.isAllDead())
+                {
+                    allDead = false;
+
+                    // Move all ants according to their environment and nervous system
+                    colony.MoveColony();
+                }
+            }
+
+            if (allDead)
+            {
+                // TODO Choose the best nervous system to keep
+
+                colonies.Clear();
+
+
+                RNG = new System.Random((int)Time.time);
+
+                // Generate new simplex noise generator
+                SimplexNoise = new SimplexNoise((int)Time.time);
+                GenerateData();
+                GenerateChunks();
+                GenerateAnts();
+            }
         }
 
         #endregion

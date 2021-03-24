@@ -114,7 +114,7 @@ namespace Antymology.Agents
             {
                 for (int z = -off; z <= off; z++)
                 {
-                    nodes[i].setVal(perceiveAtPixel(new Vector2(this.antOn.getPosition().x + x, this.antOn.getPosition().z + z)));
+                    nodes[i].setVal(perceiveAtPixel(new Vector2Int(this.antOn.getPosition().x + x, this.antOn.getPosition().z + z)));
                     i++;
                 }
             }
@@ -125,14 +125,25 @@ namespace Antymology.Agents
         }
 
 
-        private float perceiveAtPixel(Vector2 topDownWorldPos)
+        private float perceiveAtPixel(Vector2Int topDownWorldPos)
         {
             float queenIntensity = 1;
             float mulchIntensity = 0.5f;
             float elseIntensity = -0.5f;
+            // Check if Queen is at this location
+            if (antOn.colony.queen.getPosition().x == topDownWorldPos.x && antOn.colony.queen.getPosition().z == topDownWorldPos.y)
+                return queenIntensity;
 
+            // Get the top most block
+            int airHeight = 0;
 
-            return 0f;
+            while (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight, topDownWorldPos.y).GetType() != typeof(Terrain.AirBlock)) { airHeight++; }
+
+            // Now check the block right below this air block
+            if (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight-1, topDownWorldPos.y).GetType() == typeof(Terrain.MulchBlock))
+                return mulchIntensity;
+
+            return elseIntensity;
         }
 
 

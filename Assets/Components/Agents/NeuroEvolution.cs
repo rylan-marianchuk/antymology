@@ -28,7 +28,7 @@ namespace Antymology.Agents
             gone.enabled = false;
 
             // Add the new node
-            toMutate.nodes.Add(('h', 0));
+            toMutate.nodes.Add(new NervousSystem.Node('h', 0));
 
             // Add two new connections
             toMutate.connections.Add(new NervousSystem.Connection(gone.id_in, toMutate.nodes.Count - 1, 1, true, 0));
@@ -59,7 +59,7 @@ namespace Antymology.Agents
                 {
                     int j = result[y];
                     if (i == j) continue;
-                    if ((toMutate.nodes[i].Item1 == 'i' && toMutate.nodes[j].Item1 == 'i') || (toMutate.nodes[i].Item1 == 'o' && toMutate.nodes[j].Item1 == 'o'))
+                    if ((toMutate.nodes[i].c == 'i' && toMutate.nodes[j].c == 'i') || (toMutate.nodes[i].c == 'o' && toMutate.nodes[j].c == 'o'))
                         continue;
                     if (connectionExists(i, j, toMutate)) continue;
 

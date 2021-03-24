@@ -11,13 +11,16 @@ namespace Antymology.Agents
 
         public QueenAnt queen;
 
-        public Colony()
-        {
-            colony = new List<Ant>();
-            this.spawnColony(20);
-        }
+        private bool allDead = false;
 
         private int totalNestBlocks = 0;
+
+        public Colony(int size)
+        {
+            colony = new List<Ant>();
+            this.spawnColony(size);
+        }
+
 
         public void incrementNestBlocks()
         {
@@ -29,7 +32,7 @@ namespace Antymology.Agents
             return this.totalNestBlocks;
         }
 
-
+        public bool isAllDead() { return this.allDead;  }
 
         public void spawnColony(int spawnRadius)
         {
@@ -93,6 +96,18 @@ namespace Antymology.Agents
                 if (ant.getPosition() == p) count++;
             }
             return count >= 2;
+        }
+
+
+        public void MoveColony()
+        {
+            foreach (Agents.Ant ant in this.colony)
+            {
+                if (!ant.dead)
+                    ant.Act();
+                if (ant.timeSinceLastAction >= 5)
+                    ant.dead = true;
+            }
         }
     }
 
