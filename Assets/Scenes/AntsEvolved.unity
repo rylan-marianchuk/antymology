@@ -377,9 +377,7 @@ MonoBehaviour:
   queenAntPrefab: {fileID: 3964531562153704153, guid: 4b08cc3b7d1559a458071dd7efbc4052,
     type: 3}
   blockMaterial: {fileID: 2100000, guid: 4db9d8fce1a69b74f81daf1375c9ed88, type: 2}
-  topColony: {fileID: 0}
   generation: 0
-  colonies: []
 --- !u!4 &964896558
 Transform:
   m_ObjectHideFlags: 0
@@ -416,7 +414,7 @@ MonoBehaviour:
   Number_Of_Conatiner_Spheres: 5
   Conatiner_Sphere_Radius: 10
   antsPerColony: 20
-  spawnRadius: 20
+  spawnRadius: 8
   inputGridSize: 7
   coloniesPerWorld: 4
   initialHealth: 1000

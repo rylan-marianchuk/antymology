@@ -42,6 +42,12 @@ namespace Antymology.Terrain
         /// </summary>
         private SimplexNoise SimplexNoise;
 
+        /// <summary>
+        /// The unit of the evolutionary search. Keeps the top colony at the end of each generation.
+        /// </summary>
+        private Agents.Colony topColony;
+        public long generation = 0;
+        private List<Agents.Colony> colonies;
         #endregion
 
         #region Initialization
@@ -68,15 +74,14 @@ namespace Antymology.Terrain
                 ConfigurationManager.Instance.World_Diameter,
                 ConfigurationManager.Instance.World_Height,
                 ConfigurationManager.Instance.World_Diameter];
+
+            topColony = new Agents.Colony();
+            colonies = new List<Agents.Colony>();
         }
 
-        /// <summary>
-        /// The unit of the evolutionary search. Keeps the top colony at the end of each generation.
-        /// </summary>
-        public Agents.Colony topColony;
 
-        public long generation = 0;
-        public List<Agents.Colony> colonies;
+
+
         /// <summary>
         /// Called after every awake has been called.
         /// </summary>
@@ -88,7 +93,7 @@ namespace Antymology.Terrain
             Camera.main.transform.position = new Vector3(0 / 2, Blocks.GetLength(1), 0);
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
-            topColony = new Agents.Colony();
+            
             GenerateAnts();
             
         }
@@ -107,7 +112,8 @@ namespace Antymology.Terrain
 
         private void FixedUpdate()
         {
-            
+            if (!Input.GetKeyUp(KeyCode.End))
+                return;
             // Update all ants
 
             // Must determine when to respawn everything

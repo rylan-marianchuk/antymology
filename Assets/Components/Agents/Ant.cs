@@ -31,13 +31,15 @@ namespace Antymology.Agents
         public int timeSinceLastAction = 0;
         public short colonyId;
 
-        public Ant()
+        //public Ant()
+        void Awake()
         {
             this.totalHealth = ConfigurationManager.Instance.initialHealth;
             this.currhealth = this.totalHealth;
 
             // Create the nervous system
             ns = new NervousSystem();
+            ns.antOn = this;
         }
 
         public void consumeBlock()
@@ -93,12 +95,16 @@ namespace Antymology.Agents
         {
             // Exchange health according to function
             // Give three quarters of health to the queen (if room)
-            if (colony.queen.position == this.position)
+            Ant queenScript = colony.queen.GetComponent<Ant>();
+            if (queenScript.position == this.position)
             {
-                if (colony.queen.currhealth + (int)0.75f * this.currhealth < colony.queen.totalHealth)
+                if (queenScript.currhealth + (int)0.75f * this.currhealth < queenScript.totalHealth)
                 {
-                    colony.queen.updateHealth((int)0.75f * this.currhealth);
+                    queenScript.updateHealth((int)0.75f * this.currhealth);
                     this.updateHealth(-(int)0.75f * this.currhealth);
+
+                    // No other choice but to do this 
+                    return;
                 }
             }
 
@@ -106,7 +112,7 @@ namespace Antymology.Agents
 
             // Consume mulch
             //if (Terrain.WorldManager.Instance.GetBlock(position.x, position.y - 1, position.z).GetType() == typeof(Terrain.MulchBlock))
-                //this.consumeBlock();
+            //this.consumeBlock();
 
 
             // The output layer of the nervous system
@@ -155,11 +161,12 @@ namespace Antymology.Agents
         {
             // Exchange health according to function
             // Give three quarters of health to the queen (if room)
-            if (colony.queen.position == this.position)
+            Ant queenScript = colony.queen.GetComponent<Ant>();
+            if (queenScript.position == this.position)
             {
-                if (colony.queen.currhealth + (int)0.75f * this.currhealth < colony.queen.totalHealth)
+                if (queenScript.currhealth + (int)0.75f * this.currhealth < queenScript.totalHealth)
                 {
-                    colony.queen.updateHealth((int)0.75f * this.currhealth);
+                    queenScript.updateHealth((int)0.75f * this.currhealth);
                     this.updateHealth(-(int)0.75f * this.currhealth);
 
                     // No other choice but to do this 
@@ -209,6 +216,8 @@ namespace Antymology.Agents
                 timeSinceLastAction++;
             }
 
+            // Reduce health by frame amount
+            this.updateHealth(-ConfigurationManager.Instance.healthReduction);
 
         }
 
@@ -230,6 +239,24 @@ namespace Antymology.Agents
             this.setPosition(new Vector3Int(position.x + dir.x, airHeight, position.z + dir.y));
         }
 
+
+
+        // Visualize this nervous System when selected
+        void OnDrawGizmosSelected()
+        {
+            Vector3 offset = new Vector3(-40, 0, 0);
+            for (int i = 0; i < ns.inputGridLength; i++)
+            {
+                for (int j = 0; j < ns.inputGridLength; j++)
+                {
+                    float intensity = ns.nodes[ns.inputGridLength * i + j].val;
+                    Gizmos.color = new Color(1, 1, 0, 0.85F);
+                    Gizmos.DrawCube(new Vector3(i, 0, j) + offset, Vector3.one);
+                }
+            }
+            
+            
+        }
     }
 }
 

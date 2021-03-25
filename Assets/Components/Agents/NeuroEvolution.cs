@@ -49,15 +49,13 @@ namespace Antymology.Agents
             List<int> L1 = new List<int>();
             for (int i = 0; i < toMutate.nodes.Count; i++) { L1.Add(i); }
             var rnd = new System.Random();
-            List<int> result = (List<int>)L1.OrderBy(item => rnd.Next());
+            var result = L1.OrderBy(item => rnd.Next());
 
 
-            for (int x = 0; x < toMutate.nodes.Count; x++)
+            foreach (var i in result)
             {
-                int i = result[x];
-                for (int y = 0; y < toMutate.nodes.Count; y++)
+                foreach (var j in result)
                 {
-                    int j = result[y];
                     if (i == j) continue;
                     if ((toMutate.nodes[i].c == 'i' && toMutate.nodes[j].c == 'i') || (toMutate.nodes[i].c == 'o' && toMutate.nodes[j].c == 'o'))
                         continue;
@@ -79,7 +77,6 @@ namespace Antymology.Agents
         {
             foreach (var c in ns.connections)
             {
-
                 if ((c.id_in == i && c.id_out == j) || (c.id_in == j && c.id_out == i))
                     return true;
             }

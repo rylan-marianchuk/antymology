@@ -5,11 +5,13 @@ using UnityEngine;
 
 namespace Antymology.Agents
 { 
-    public class Colony : MonoBehaviour
+    public class Colony
     {
-        public List<Ant> colony;
+        // All these gameobjects are regular ants
+        public List<GameObject> colony;
 
-        public QueenAnt queen;
+
+        public GameObject queen;
 
         public short colonyId;
 
@@ -22,7 +24,7 @@ namespace Antymology.Agents
         /// <param name="worldQuadrant"></param>
         public Colony(short worldQuadrant, Colony singleParent)
         {
-            colony = new List<Ant>();
+            colony = new List<GameObject>();
             colonyId = worldQuadrant;
             this.spawnColony(ConfigurationManager.Instance.spawnRadius, singleParent);
         }
@@ -33,11 +35,12 @@ namespace Antymology.Agents
         /// </summary>
         public Colony()
         {
-            colony = new List<Ant>();
+            colony = new List<GameObject>();
             for (int i = 0; i < ConfigurationManager.Instance.antsPerColony; i++)
             {
-                colony.Add(new Ant());
+                colony.Add(Object.Instantiate(Terrain.WorldManager.Instance.antPrefab));
             }
+            queen = Object.Instantiate(Terrain.WorldManager.Instance.queenAntPrefab);
         }
 
         public void incrementNestBlocks()
@@ -54,7 +57,7 @@ namespace Antymology.Agents
         {
             foreach (var ant in this.colony)
             {
-                if (!ant.dead) return false;
+                if (!ant.GetComponent<Ant>().dead) return false;
             }
             return true;
         }
@@ -97,27 +100,29 @@ namespace Antymology.Agents
             {
                 if (Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
                 {
-                    NeuroEvolution.MutateByConnection(singleParent.colony[i].getNervousSystem());
+                    NeuroEvolution.MutateByConnection(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
                 }
                 else if (Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
                 {
-                    NeuroEvolution.MutateByNode(singleParent.colony[i].getNervousSystem());
+                    NeuroEvolution.MutateByNode(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
                 }
 
-                NervousSystem newNS = new NervousSystem(singleParent.colony[i].getNervousSystem().nodes, singleParent.colony[i].getNervousSystem().connections);
+                NervousSystem newNS = new NervousSystem(singleParent.colony[i].GetComponent<Ant>().getNervousSystem().nodes,
+                                                        singleParent.colony[i].GetComponent<Ant>().getNervousSystem().connections);
                 spawnAnt(c, spawnRadius, newNS, false);
             }
 
             // Spawning the queen
             if (Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
             {
-                NeuroEvolution.MutateByConnection(singleParent.queen.getNervousSystem());
+                NeuroEvolution.MutateByConnection(singleParent.queen.GetComponent<Ant>().getNervousSystem());
             }
             else if (Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
             {
-                NeuroEvolution.MutateByNode(singleParent.queen.getNervousSystem());
+                NeuroEvolution.MutateByNode(singleParent.queen.GetComponent<Ant>().getNervousSystem());
             }
-            NervousSystem newNSqueen = new NervousSystem(singleParent.queen.getNervousSystem().nodes, singleParent.queen.getNervousSystem().connections);
+            NervousSystem newNSqueen = new NervousSystem(singleParent.queen.GetComponent<Ant>().getNervousSystem().nodes, 
+                                                         singleParent.queen.GetComponent<Ant>().getNervousSystem().connections);
             
             spawnAnt(c, spawnRadius, newNSqueen, true);
 
@@ -143,19 +148,19 @@ namespace Antymology.Agents
             GameObject obj;
             if (isQueen)
             {
-                obj = Instantiate(Terrain.WorldManager.Instance.queenAntPrefab, new Vector3(c.x + rx, y, c.y + rz), Quaternion.identity);
-                this.queen = obj.GetComponent<QueenAnt>();
+                obj = UnityEngine.Object.Instantiate(Terrain.WorldManager.Instance.queenAntPrefab, new Vector3(c.x + rx, y, c.y + rz), Quaternion.identity);
+                this.queen = obj;
             }
             else
-                obj = Instantiate(Terrain.WorldManager.Instance.antPrefab, new Vector3(c.x + rx, y, c.y + rz), Quaternion.identity);
+                obj = UnityEngine.Object.Instantiate(Terrain.WorldManager.Instance.antPrefab, new Vector3(c.x + rx, y, c.y + rz), Quaternion.identity);
             
                 
             obj.GetComponent<Ant>().setPosition(new Vector3Int(c.x + rx, y, c.y + rz));
             obj.GetComponent<Ant>().setColony(this);
             obj.GetComponent<Ant>().setNervousSystem(toHave);
             obj.GetComponent<Ant>().colonyId = this.colonyId;
-            
-            this.colony.Add(obj.GetComponent<Ant>());
+            toHave.antOn = obj.GetComponent<Ant>();
+            this.colony.Add(obj);
         }
 
 
@@ -167,7 +172,7 @@ namespace Antymology.Agents
             int count = 0;
             foreach (var ant in colony)
             {
-                if (ant.getPosition() == p) count++;
+                if (ant.GetComponent<Ant>().getPosition() == p) count++;
             }
             return count >= 2;
         }
@@ -175,12 +180,13 @@ namespace Antymology.Agents
 
         public void MoveColony()
         {
-            foreach (Agents.Ant ant in this.colony)
+            foreach (GameObject ant in this.colony)
             {
-                if (!ant.dead)
-                    ant.Act();
-                if (ant.timeSinceLastAction >= 5)
-                    ant.dead = true;
+                Ant s = ant.GetComponent<Ant>();
+                if (!s.dead)
+                    s.getNervousSystem().perceive();
+                if (s.timeSinceLastAction >= 5)
+                    s.dead = true;
             }
         }
     }

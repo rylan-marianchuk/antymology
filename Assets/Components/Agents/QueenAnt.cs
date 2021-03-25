@@ -8,6 +8,18 @@ namespace Antymology.Agents
     public class QueenAnt : Ant
     {
         public GameObject nestBlock;
+
+        void Awake()
+        {
+            this.totalHealth = ConfigurationManager.Instance.initialHealth;
+            this.currhealth = this.totalHealth;
+
+            // Create the nervous system
+            ns = new NervousSystem();
+            ns.antOn = this;
+        }
+
+
         public void MakeNestBlock()
         {
             // Decrement health by one third

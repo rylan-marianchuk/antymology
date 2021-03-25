@@ -60,11 +60,13 @@ namespace Antymology.Agents
         // The data structures for the NEAT genome
 
         public List<Node> nodes;
+        private List<Node> outputNodes;
+
         public List<Connection> connections;
 
         public Ant antOn;
 
-        private int inputGridLength;
+        public int inputGridLength;
 
         public NervousSystem(List<Node> nodes, List<Connection> connections)
         {
@@ -78,10 +80,12 @@ namespace Antymology.Agents
 
         }
 
+
         public NervousSystem()
         {
             this.inputGridLength = ConfigurationManager.Instance.inputGridSize;
             this.nodes = new List<Node>(inputGridLength * inputGridLength);
+            this.connections = new List<Connection>();
             // Adding the input nodes
             for (int i = 0; i < inputGridLength * inputGridLength; i++)
             {
@@ -90,7 +94,9 @@ namespace Antymology.Agents
             // Adding the output nodes
             for (int i = 0; i < 6; i++)
             {
-                nodes.Add(new Node('o'));
+                Node anOut = new Node('o');
+                nodes.Add(anOut);
+                outputNodes.Add(anOut);
             }
             // Add a single random connection.
             NeuroEvolution.MutateByConnection(this);
@@ -123,7 +129,8 @@ namespace Antymology.Agents
 
             // Depth first search from the output nodes to grab value. Update node and weight activation along the way
 
-            return new float[6];
+            return new float[6] {DFSonNetwork(outputNodes[0]), DFSonNetwork(outputNodes[1]), DFSonNetwork(outputNodes[2]), 
+                                 DFSonNetwork(outputNodes[3]), DFSonNetwork(outputNodes[4]), DFSonNetwork(outputNodes[5])};
         }
 
 
@@ -133,7 +140,7 @@ namespace Antymology.Agents
             float mulchIntensity = 0.5f;
             float elseIntensity = -0.5f;
             // Check if Queen is at this location
-            if (antOn.colony.queen.getPosition().x == topDownWorldPos.x && antOn.colony.queen.getPosition().z == topDownWorldPos.y)
+            if (antOn.colony.queen.GetComponent<Ant>().getPosition().x == topDownWorldPos.x && antOn.colony.queen.GetComponent<Ant>().getPosition().z == topDownWorldPos.y)
                 return queenIntensity;
 
             // Get the top most block
@@ -193,6 +200,30 @@ namespace Antymology.Agents
             return 1f / (1 + Mathf.Exp(-4.5f * weightedSum));
         }
 
+
+        /// <summary>
+        /// Called on each output node to compute the network.
+        /// 
+        /// Must do it this way, rather than feed forward, because NEAT does not create predefined layers of neurons
+        /// </summary>
+        /// <param name="start">the output node to compute</param>
+        /// <returns>the float value of the output node</returns>
+        private float DFSonNetwork(Node start)
+        {
+            /*
+              Initialize an empty stack for storage of nodes, S.
+                For each vertex u, define u.visited to be false.
+                Push the root (first node to be visited) onto S.
+                While S is not empty:
+                    Pop the first element in S, u.
+                    If u.visited = false, then:
+                        U.visited = true
+                        for each unvisited neighbor w of u:
+                            Push w into S.
+                End process when all nodes have been visited.
+            */
+            Stack<NervousSystem.Node> S = new Stack<Node>();
+        }
     }
 }
 

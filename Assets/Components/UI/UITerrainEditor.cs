@@ -117,6 +117,7 @@ namespace Antymology.UI
                 currentBlockType = oldBlockType;
             }
 
+            /*
             foreach (var c in WorldManager.Instance.colonies)
             {
                 if (Input.GetKeyDown(KeyCode.E))
@@ -162,6 +163,7 @@ namespace Antymology.UI
                     }
                 }
             }
+            */
             
         }
 
