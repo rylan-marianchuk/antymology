@@ -57,6 +57,7 @@ namespace Antymology.Agents
         {
             foreach (var ant in this.colony)
             {
+                if (ant == null) continue;
                 if (!ant.GetComponent<Ant>().dead) return false;
             }
             return true;
@@ -172,6 +173,7 @@ namespace Antymology.Agents
             int count = 0;
             foreach (var ant in colony)
             {
+                if (ant == null) continue;
                 if (ant.GetComponent<Ant>().getPosition() == p) count++;
             }
             return count >= 2;
@@ -182,11 +184,22 @@ namespace Antymology.Agents
         {
             foreach (GameObject ant in this.colony)
             {
+                if (ant == null) continue;
+                if (ant == queen)
+                {
+                    queen.GetComponent<QueenAnt>().Act();
+                    continue;
+                }
+
                 Ant s = ant.GetComponent<Ant>();
                 if (!s.dead)
-                    s.getNervousSystem().perceive();
+                    s.Act();
+
                 if (s.timeSinceLastAction >= 5)
-                    s.dead = true;
+                {
+                    s.die();
+                }
+                    
             }
         }
     }

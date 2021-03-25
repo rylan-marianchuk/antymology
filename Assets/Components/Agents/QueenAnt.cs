@@ -30,7 +30,7 @@ namespace Antymology.Agents
 
 
 
-        public void Act()
+        public new void Act()
         {
             // Exchange health
 
@@ -39,23 +39,35 @@ namespace Antymology.Agents
 
             // The output layer of the nervous system
             //  byte[]  {u, r, d, l, consume, null}
-            int todo = ns.indexOfMax(ns.perceive());
+            float[] perception = ns.perceive();
+            lastPerception = "";
+            lastPerception += " u: " + perception[0].ToString();
+            lastPerception += " r: " + perception[1].ToString();
+            lastPerception += " d: " + perception[2].ToString();
+            lastPerception += " l: " + perception[3].ToString();
+            lastPerception += " consume: " + perception[4].ToString();
+            lastPerception += " nothing: " + perception[5].ToString();
+            int todo = ns.indexOfMax(perception);
 
             if (todo == 0)
             {
-                Move(new Vector2Int(0, 0));
+                Move(new Vector2Int(0, 1));
+                transform.eulerAngles = new Vector3(0, 90f, 0);
             }
             else if (todo == 1)
             {
-                Move(new Vector2Int(0, 0));
+                Move(new Vector2Int(1, 0));
+                transform.eulerAngles = new Vector3(0, 180f, 0);
             }
             else if (todo == 2)
             {
-                Move(new Vector2Int(0, 0));
+                Move(new Vector2Int(0, -1));
+                transform.eulerAngles = new Vector3(0, -90f, 0);
             }
             else if (todo == 3)
             {
-                Move(new Vector2Int(0, 0));
+                Move(new Vector2Int(-1, 0));
+                transform.eulerAngles = new Vector3(0, 0, 0);
             }
             else if (todo == 4)
             {
@@ -65,9 +77,11 @@ namespace Antymology.Agents
             else
             {
                 // Do nothing
+
             }
 
-
+            // Reduce health by frame amount
+            this.updateHealth(-ConfigurationManager.Instance.healthReduction);
         }
     }
 

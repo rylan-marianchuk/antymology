@@ -91,12 +91,18 @@ namespace Antymology.Agents
         public NervousSystem(List<Node> nodes, List<Connection> connections)
         {
             this.nodes = new List<Node>();
+            this.outputNodes = new List<Node>();
             this.connections = new List<Connection>();
             foreach (var n in nodes)
             {
-                this.nodes.Add(new Node(n.c, n.val, new List<Connection>(n.attached)));
+                Node newN = new Node(n.c, n.val, new List<Connection>(n.attached));
+                this.nodes.Add(newN);
+                if (n.c == 'o')
+                    outputNodes.Add(newN);
+
             }
                 
+
 
             foreach (var c in connections)
                 this.connections.Add(new Connection(c.id_in, c.id_out, c.enabled, c.innovationNum));
@@ -108,6 +114,7 @@ namespace Antymology.Agents
         {
             this.inputGridLength = ConfigurationManager.Instance.inputGridSize;
             this.nodes = new List<Node>(inputGridLength * inputGridLength);
+            this.outputNodes = new List<Node>();
             this.connections = new List<Connection>();
             // Adding the input nodes
             for (int i = 0; i < inputGridLength * inputGridLength; i++)
@@ -147,21 +154,25 @@ namespace Antymology.Agents
                 node.setUNvisited();
             }
 
-            int off = (this.inputGridLength - 1) / 2;
+            int off = (ConfigurationManager.Instance.inputGridSize - 1) / 2;
             int i = 0;
             // Retrieve input values - get from environment
             for (int x = -off; x <= off; x++)
             {
                 for (int z = -off; z <= off; z++)
                 {
-                    nodes[i].setVal(perceiveAtPixel(new Vector2Int(this.antOn.getPosition().x + x, this.antOn.getPosition().z + z)));
-                    nodes[i].setVisited();
+                    Node thisN = new Node('i', nodes[i].attached);
+                    thisN.val = perceiveAtPixel(new Vector2Int(this.antOn.getPosition().x + x, this.antOn.getPosition().z + z));
+                    thisN.setVisited();
+                    nodes[i] = thisN;
                     i++;
                 }
             }
             // Health node
-            nodes[i].setVal((float)antOn.getCurrentHealth() / this.antOn.getTotalHealth());
-            nodes[i].setVisited();
+            Node thisNHealth = new Node('i', nodes[i].attached);
+            thisNHealth.val = (float)antOn.getCurrentHealth() / this.antOn.getTotalHealth();
+            thisNHealth.setVisited();
+            nodes[i] = thisNHealth;
             // Depth first search from the output nodes to grab value. Update node and weight activation along the way
 
             Connection nullC = new Connection(-1, -1, false, 0);
@@ -174,9 +185,11 @@ namespace Antymology.Agents
         {
             float queenIntensity = 1;
             float mulchIntensity = 0.5f;
-            float elseIntensity = -0.5f;
+            float elseIntensity = 0f;
+            float nestIntensity = -0.25f;
+            float tooHighIntensity = -0.75f;
             // Check if Queen is at this location
-            if (antOn.colony.queen.GetComponent<Ant>().getPosition().x == topDownWorldPos.x && antOn.colony.queen.GetComponent<Ant>().getPosition().z == topDownWorldPos.y)
+            if (antOn.colony.queen != null && antOn.colony.queen.GetComponent<Ant>().getPosition().x == topDownWorldPos.x && antOn.colony.queen.GetComponent<Ant>().getPosition().z == topDownWorldPos.y)
                 return queenIntensity;
 
             // Get the top most block
@@ -184,9 +197,24 @@ namespace Antymology.Agents
 
             while (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight, topDownWorldPos.y).GetType() != typeof(Terrain.AirBlock)) { airHeight++; }
 
+
+            int dx = Mathf.Abs(topDownWorldPos.x - antOn.getPosition().x);
+            int dz = Mathf.Abs(topDownWorldPos.y - antOn.getPosition().z);
+            if ((dx == 1 && dz == 0) || (dx == 0 && dz == 1) || (dx == 1 && dz == 1))
+            {
+                // Adjcent block
+                if (airHeight - antOn.getPosition().y > 2)
+                    return tooHighIntensity;
+            }
+
+
             // Now check the block right below this air block
             if (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight-1, topDownWorldPos.y).GetType() == typeof(Terrain.MulchBlock))
                 return mulchIntensity;
+
+            // Now check the block right below this air block for NEST
+            if (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight - 1, topDownWorldPos.y).GetType() == typeof(Terrain.NestBlock))
+                return nestIntensity;
 
             return elseIntensity;
         }
@@ -233,7 +261,7 @@ namespace Antymology.Agents
         /// <returns></returns>
         private float activation(float weightedSum)
         {
-            return 1f / (1 + Mathf.Exp(-4.5f * weightedSum));
+            return 1f / (1 + Mathf.Exp(-4.5f * weightedSum)) - 0.5f;
         }
 
 
@@ -280,6 +308,7 @@ namespace Antymology.Agents
         private float CalcNetwork(Node start, Connection from)
         {
             start.setVisited();
+            float inp = 0;
             foreach (Connection Cneighbor in start.attached)
             {
                 if (Cneighbor.id_in == from.id_in && Cneighbor.id_out == from.id_out)
@@ -290,20 +319,21 @@ namespace Antymology.Agents
                     // id_in it the neighbor node
                     if (!nodes[Cneighbor.id_in].getVisited())
                     {
-                        start.val += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_in], Cneighbor);
+                        inp += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_in], Cneighbor);
                     }
-                    else start.val += Cneighbor.weight * nodes[Cneighbor.id_in].val;
+                    else inp += Cneighbor.weight * nodes[Cneighbor.id_in].val;
                 }
                 else
                 {
                     // id_out is the neighbor node
                     if (!nodes[Cneighbor.id_out].getVisited())
                     {
-                        start.val += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_out], Cneighbor);
+                        inp += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_out], Cneighbor);
                     }
-                    else start.val += Cneighbor.weight * nodes[Cneighbor.id_out].val;
+                    else inp += Cneighbor.weight * nodes[Cneighbor.id_out].val;
                 }
             }
+            start.val = activation(inp);
             return start.val;
         }
     }

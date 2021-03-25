@@ -109,10 +109,15 @@ namespace Antymology.Terrain
             }
             
         }
-
+        private bool pause = false;
         private void FixedUpdate()
         {
-            if (!Input.GetKeyUp(KeyCode.End))
+            //if (!Input.GetKeyUp(KeyCode.End))
+                //return;
+            if (Input.GetKeyUp(KeyCode.End))
+                pause = !pause;
+
+            if (pause && !Input.GetKeyUp(KeyCode.Minus))
                 return;
             // Update all ants
 
@@ -150,8 +155,12 @@ namespace Antymology.Terrain
                 // Reset the world.
                 RNG = new System.Random((int)Time.time);
                 SimplexNoise = new SimplexNoise((int)Time.time);
-                GenerateData();
-                GenerateChunks();
+                if (RNG.NextDouble() < 0.02)
+                {
+                    GenerateData();
+                    GenerateChunks();
+                }
+
                 GenerateAnts();
             }
         }

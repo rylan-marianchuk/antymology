@@ -7,7 +7,10 @@ namespace Antymology.Agents
     public class Ant : MonoBehaviour
     {
         protected int totalHealth;
-        protected int currhealth;
+        public int currhealth;
+        // For debuggin purposes
+        public string lastMove = "";
+        public string lastPerception = "";
 
         public bool dead = false;
 
@@ -45,8 +48,12 @@ namespace Antymology.Agents
         public void consumeBlock()
         {
             // Cannot consume block if another ant is here
-            if (colony.isOtherAntHere(this.position))
+            if (colony.isOtherAntHere(this.position) || position.y == 0)
+            {
+                timeSinceLastAction++;
                 return;
+            }
+               
 
             this.timeSinceLastAction = 0;
 
@@ -59,12 +66,19 @@ namespace Antymology.Agents
 
         }
 
+        public void die()
+        {
+            this.dead = true;
+            this.currhealth = 0;
+            Destroy(gameObject);
+        }
+
         public void updateHealth(int amount)
         {
-            if (this.currhealth + amount < 0)
+            if (this.currhealth + amount <= 0)
             {
-                this.dead = true;
-                this.currhealth = 0;
+                die();
+                return;
             }
                 
 
@@ -87,73 +101,6 @@ namespace Antymology.Agents
         public int getCurrentHealth() { return this.currhealth; }
         public int getTotalHealth() { return this.totalHealth; }
 
-
-        /// <summary>
-        /// A very important function. Compute the neural network within the ant to choose an action.
-        /// 
-        /// First go over restrictions for immediate actions to constrain the search of the neuroevolution
-        /// </summary>
-        public void Act(int todo)
-        {
-            // Exchange health according to function
-            // Give three quarters of health to the queen (if room)
-            Ant queenScript = colony.queen.GetComponent<Ant>();
-            if (queenScript.position == this.position)
-            {
-                if (queenScript.currhealth + (int)0.75f * this.currhealth < queenScript.totalHealth)
-                {
-                    queenScript.updateHealth((int)0.75f * this.currhealth);
-                    this.updateHealth(-(int)0.75f * this.currhealth);
-
-                    // No other choice but to do this 
-                    return;
-                }
-            }
-
-
-
-            // Consume mulch
-            //if (Terrain.WorldManager.Instance.GetBlock(position.x, position.y - 1, position.z).GetType() == typeof(Terrain.MulchBlock))
-            //this.consumeBlock();
-
-
-            // The output layer of the nervous system
-            //  byte[]  {u, r, d, l, consume, null}
-            //int todo = ns.indexOfMax(ns.perceive());
-
-
-            if (todo == 0)
-            {
-                Move(new Vector2Int(0, 1));
-                transform.eulerAngles = new Vector3(0, 90f, 0);
-            }
-            else if (todo == 1)
-            {
-                Move(new Vector2Int(1, 0));
-                transform.eulerAngles = new Vector3(0, 180f, 0);
-            }
-            else if (todo == 2)
-            {
-                Move(new Vector2Int(0, -1));
-                transform.eulerAngles = new Vector3(0, -90f, 0);
-            }
-            else if (todo == 3)
-            {
-                Move(new Vector2Int(-1, 0));
-                transform.eulerAngles = new Vector3(0, 0, 0);
-            }
-            else if (todo == 4)
-            {
-                consumeBlock();
-            }
-            else
-            {
-                // Do nothing
-            }
-
-
-        }
-
         /// <summary>
         /// A very important function. Compute the neural network within the ant to choose an action.
         /// 
@@ -163,18 +110,22 @@ namespace Antymology.Agents
         {
             // Exchange health according to function
             // Give three quarters of health to the queen (if room)
-            Ant queenScript = colony.queen.GetComponent<Ant>();
-            if (queenScript.position == this.position)
+            if (colony.queen != null)
             {
-                if (queenScript.currhealth + (int)0.75f * this.currhealth < queenScript.totalHealth)
+                Ant queenScript = colony.queen.GetComponent<Ant>();
+                if (queenScript.position == this.position)
                 {
-                    queenScript.updateHealth((int)0.75f * this.currhealth);
-                    this.updateHealth(-(int)0.75f * this.currhealth);
+                    if (queenScript.currhealth + (int)0.75f * this.currhealth < queenScript.totalHealth)
+                    {
+                        queenScript.updateHealth((int)0.75f * this.currhealth);
+                        this.updateHealth(-(int)0.75f * this.currhealth);
 
-                    // No other choice but to do this 
-                    return;
+                        // No other choice but to do this 
+                        return;
+                    }
                 }
             }
+
 
 
 
@@ -185,7 +136,24 @@ namespace Antymology.Agents
 
             // The output layer of the nervous system
             //  byte[]  {u, r, d, l, consume, null}
-            int todo = ns.indexOfMax(ns.perceive());
+            float[] perception = ns.perceive();
+            lastPerception = "";
+            lastPerception += " u: " + perception[0].ToString();
+            lastPerception += " r: " + perception[1].ToString();
+            lastPerception += " d: " + perception[2].ToString();
+            lastPerception += " l: " + perception[3].ToString();
+            lastPerception += " consume: " + perception[4].ToString();
+            lastPerception += " nothing: " + perception[5].ToString();
+            if (perception[0] == 0 && perception[0] == perception[1] && perception[0] == perception[2] && perception[0] == perception[3] && perception[0] == perception[4] && perception[0] == perception[5])
+            {
+                // All outputs are 0, do nothing
+                timeSinceLastAction++;
+                return;
+            }
+
+
+            int todo = ns.indexOfMax(perception);
+
 
 
             if (todo == 0)
@@ -225,7 +193,7 @@ namespace Antymology.Agents
 
         protected void Move(Vector2Int dir)
         {
-            this.timeSinceLastAction = 0;
+            
             // If Air block in desired direction is greater than 2, don't move
             int airHeight = 0;
 
@@ -233,10 +201,11 @@ namespace Antymology.Agents
 
             if (airHeight - position.y > 2)
             {
-                Debug.Log("Ant attempted to move but couldn't, next air spot is greater than 2.");
+                //Debug.Log("Ant attempted to move but couldn't, next air spot is greater than 2.");
+                timeSinceLastAction++;
                 return;
             }
-
+            this.timeSinceLastAction = 0;
             // TODO ensure this bound is within the confines of the arena
             this.setPosition(new Vector3Int(position.x + dir.x, airHeight, position.z + dir.y));
         }

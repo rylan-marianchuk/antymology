@@ -417,7 +417,7 @@ MonoBehaviour:
   spawnRadius: 8
   inputGridSize: 7
   coloniesPerWorld: 4
-  initialHealth: 1000
+  initialHealth: 100
   healthReduction: 1
   connectionMutationRate: 0.3
   nodeMutationRate: 0.2
