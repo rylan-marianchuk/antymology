@@ -84,6 +84,8 @@ namespace Antymology.Agents
         public void setColony(Colony c) { this.colony = c; }
         public void setNervousSystem(NervousSystem n) { this.ns = n; }
         public NervousSystem getNervousSystem() { return this.ns; }
+        public int getCurrentHealth() { return this.currhealth; }
+        public int getTotalHealth() { return this.totalHealth; }
 
 
         /// <summary>

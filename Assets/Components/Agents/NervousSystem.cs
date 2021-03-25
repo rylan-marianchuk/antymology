@@ -42,18 +42,38 @@ namespace Antymology.Agents
             // 'i': input, 'h': hidden, 'o': output
             public char c;
             public float val;
-            public Node(char _c, float _val)
+            public List<Connection> attached;
+
+            // For DFS
+            private bool visited;
+            public Node(char _c, float _val, List<Connection> attached)
             {
                 this.c = _c;
                 this.val = _val;
+                this.attached = new List<Connection>(attached);
+                this.visited = false;
+            }
+
+            public Node(char _c, List<Connection> attached)
+            {
+                this.c = _c;
+                this.val = 0;
+                this.attached = new List<Connection>(attached);
+                this.visited = false;
             }
 
             public Node(char _c)
             {
                 this.c = _c;
                 this.val = 0;
+                this.attached = new List<Connection>();
+                this.visited = false;
             }
 
+            public void setVisited() { this.visited = true; }
+            public void setUNvisited() { this.visited = false; }
+
+            public bool getVisited() { return this.visited; }
             public void setVal(float v) { this.val = v; }
         }
 
@@ -72,11 +92,14 @@ namespace Antymology.Agents
         {
             this.nodes = new List<Node>();
             this.connections = new List<Connection>();
-            foreach (var c in nodes)
-                this.nodes.Add(c);
+            foreach (var n in nodes)
+            {
+                this.nodes.Add(new Node(n.c, n.val, new List<Connection>(n.attached)));
+            }
+                
 
             foreach (var c in connections)
-                this.connections.Add(c);
+                this.connections.Add(new Connection(c.id_in, c.id_out, c.enabled, c.innovationNum));
 
         }
 
@@ -89,8 +112,11 @@ namespace Antymology.Agents
             // Adding the input nodes
             for (int i = 0; i < inputGridLength * inputGridLength; i++)
             {
-                nodes.Add(new Node('i'));
+                Node anIn = new Node('i');
+                nodes.Add(anIn);
             }
+            // Health Input node
+            nodes.Add(new Node('i'));
             // Adding the output nodes
             for (int i = 0; i < 6; i++)
             {
@@ -115,6 +141,12 @@ namespace Antymology.Agents
         /// </returns>
         public float[] perceive()
         {
+            // Set each visited field in the nodes to be false. Only input nodes are always visited
+            foreach (Node node in nodes)
+            {
+                node.setUNvisited();
+            }
+
             int off = (this.inputGridLength - 1) / 2;
             int i = 0;
             // Retrieve input values - get from environment
@@ -123,14 +155,18 @@ namespace Antymology.Agents
                 for (int z = -off; z <= off; z++)
                 {
                     nodes[i].setVal(perceiveAtPixel(new Vector2Int(this.antOn.getPosition().x + x, this.antOn.getPosition().z + z)));
+                    nodes[i].setVisited();
                     i++;
                 }
             }
-
+            // Health node
+            nodes[i].setVal((float)antOn.getCurrentHealth() / this.antOn.getTotalHealth());
+            nodes[i].setVisited();
             // Depth first search from the output nodes to grab value. Update node and weight activation along the way
 
-            return new float[6] {DFSonNetwork(outputNodes[0]), DFSonNetwork(outputNodes[1]), DFSonNetwork(outputNodes[2]), 
-                                 DFSonNetwork(outputNodes[3]), DFSonNetwork(outputNodes[4]), DFSonNetwork(outputNodes[5])};
+            Connection nullC = new Connection(-1, -1, false, 0);
+            return new float[6] {CalcNetwork(outputNodes[0], nullC), CalcNetwork(outputNodes[1], nullC), CalcNetwork(outputNodes[2], nullC),
+                                 CalcNetwork(outputNodes[3], nullC), CalcNetwork(outputNodes[4], nullC), CalcNetwork(outputNodes[5], nullC)};
         }
 
 
@@ -208,21 +244,67 @@ namespace Antymology.Agents
         /// </summary>
         /// <param name="start">the output node to compute</param>
         /// <returns>the float value of the output node</returns>
+        /*
         private float DFSonNetwork(Node start)
         {
-            /*
-              Initialize an empty stack for storage of nodes, S.
-                For each vertex u, define u.visited to be false.
-                Push the root (first node to be visited) onto S.
-                While S is not empty:
-                    Pop the first element in S, u.
-                    If u.visited = false, then:
-                        U.visited = true
-                        for each unvisited neighbor w of u:
-                            Push w into S.
-                End process when all nodes have been visited.
-            */
-            Stack<NervousSystem.Node> S = new Stack<Node>();
+
+            Stack<Node> S = new Stack<Node>();
+            S.Push(start);
+            while(!(S.Count == 0))
+            {
+                Node u = S.Pop();
+                if (!u.getVisited())
+                {
+                    u.setVisited();
+                    foreach (Connection Cneighbor in u.attached)
+                    {
+                        if (Cneighbor.id_in != nodes.IndexOf(u))
+                        {
+                            // id_in it the neighbor node
+                            if (!nodes[Cneighbor.id_in].getVisited()) S.Push(nodes[Cneighbor.id_in]);
+                            else u.val += Cneighbor.weight * nodes[Cneighbor.id_in].val;
+                        }
+                        else
+                        {
+                            // id_out is the neighbor node
+                            if (!nodes[Cneighbor.id_out].getVisited()) S.Push(nodes[Cneighbor.id_out]);
+                            else u.val += Cneighbor.weight * nodes[Cneighbor.id_out].val;
+                        }
+                    }
+                }
+            }
+
+        }
+        */
+
+        private float CalcNetwork(Node start, Connection from)
+        {
+            start.setVisited();
+            foreach (Connection Cneighbor in start.attached)
+            {
+                if (Cneighbor.id_in == from.id_in && Cneighbor.id_out == from.id_out)
+                    continue;
+
+                if (Cneighbor.id_in != nodes.IndexOf(start))
+                {
+                    // id_in it the neighbor node
+                    if (!nodes[Cneighbor.id_in].getVisited())
+                    {
+                        start.val += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_in], Cneighbor);
+                    }
+                    else start.val += Cneighbor.weight * nodes[Cneighbor.id_in].val;
+                }
+                else
+                {
+                    // id_out is the neighbor node
+                    if (!nodes[Cneighbor.id_out].getVisited())
+                    {
+                        start.val += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_out], Cneighbor);
+                    }
+                    else start.val += Cneighbor.weight * nodes[Cneighbor.id_out].val;
+                }
+            }
+            return start.val;
         }
     }
 }
