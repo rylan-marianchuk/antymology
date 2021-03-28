@@ -4,18 +4,18 @@ using UnityEngine;
 
 
 namespace Antymology.Agents
-{ 
+{
     public class Colony
     {
         // All these gameobjects are regular ants
         public List<GameObject> colony;
-
 
         public GameObject queen;
 
         public short colonyId;
 
         private int totalNestBlocks = 0;
+
 
 
         /// <summary>
@@ -184,16 +184,17 @@ namespace Antymology.Agents
         {
             foreach (GameObject ant in this.colony)
             {
-                if (ant == null) continue;
                 if (ant == queen)
                 {
-                    queen.GetComponent<QueenAnt>().Act();
+                    QueenAnt qS = queen.GetComponent<QueenAnt>();
+                    if (!qS.dead) qS.Act();
                     continue;
                 }
 
                 Ant s = ant.GetComponent<Ant>();
                 if (!s.dead)
                     s.Act();
+                else continue;
 
                 if (s.timeSinceLastAction >= 5)
                 {
@@ -201,6 +202,16 @@ namespace Antymology.Agents
                 }
                     
             }
+        }
+
+
+        public void DestroyColony()
+        {
+            foreach (GameObject gameObject in colony)
+            {
+                UnityEngine.Object.Destroy(gameObject);
+            }
+            UnityEngine.Object.Destroy(queen); 
         }
     }
 

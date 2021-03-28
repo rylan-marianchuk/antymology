@@ -81,7 +81,7 @@ namespace Antymology.Terrain
 
 
 
-
+        private long noNewTopColonySince = 0;
         /// <summary>
         /// Called after every awake has been called.
         /// </summary>
@@ -93,7 +93,10 @@ namespace Antymology.Terrain
             Camera.main.transform.position = new Vector3(0 / 2, Blocks.GetLength(1), 0);
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
-            
+            colonies.Add(null);
+            colonies.Add(null);
+            colonies.Add(null);
+            colonies.Add(null);
             GenerateAnts();
             
         }
@@ -105,7 +108,7 @@ namespace Antymology.Terrain
         {
             for (short i = 0; i < ConfigurationManager.Instance.coloniesPerWorld; i++)
             {
-                colonies.Add(new Agents.Colony(i, topColony));
+                colonies[i] = new Agents.Colony(i, topColony);
             }
             
         }
@@ -138,29 +141,79 @@ namespace Antymology.Terrain
 
             if (allDead)
             {
+                generation++;
                 // TODO Choose the best nervous system to keep
                 int bestNestSize = topColony.getTotalNestBlocks();
                 foreach (Agents.Colony colony in colonies)
                 {
                     if (colony.getTotalNestBlocks() > bestNestSize)
                     {
+                        topColony.DestroyColony();
                         topColony = colony;
                         bestNestSize = colony.getTotalNestBlocks();
+                        noNewTopColonySince = generation;
                     }
                 }
 
-                colonies.Clear();
-                generation++;
 
-                // Reset the world.
-                RNG = new System.Random((int)Time.time);
-                SimplexNoise = new SimplexNoise((int)Time.time);
-                if (RNG.NextDouble() < 0.02)
+                // Remove all but the best
+                foreach (Agents.Colony colony1 in colonies)
                 {
-                    GenerateData();
-                    GenerateChunks();
+                    if (colony1 != topColony)
+                    {
+                        colony1.DestroyColony();
+                    }
                 }
 
+
+                
+
+                Debug.Log("On generation " + generation.ToString() + " the best colony produced " + bestNestSize.ToString() + " blocks.");
+                Debug.Log("BUT no new top colony since generation " + noNewTopColonySince.ToString());
+                if (generation % 5 == 0)
+                {
+                       
+                    // Reset the world. Every 20 generations
+                    RNG = new System.Random((int)Time.time);
+                    SimplexNoise = new SimplexNoise((int)Time.time);
+                    // Initialize a new 3D array of blocks with size of the number of chunks times the size of each chunk
+                    Blocks = new AbstractBlock[
+                        ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter,
+                        ConfigurationManager.Instance.World_Height * ConfigurationManager.Instance.Chunk_Diameter,
+                        ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter];
+
+                    for (int i = 0; i < ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter; i++)
+                    {
+                        for (int j = 0; j < ConfigurationManager.Instance.World_Height * ConfigurationManager.Instance.Chunk_Diameter; j++)
+                        {
+                            for (int k = 0; k < ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter; k++)
+                            {
+                                Blocks[i, j, k] = new AirBlock();
+                            }
+                        }
+                    }
+
+
+                    GameObject chunks = GameObject.Find("Chunks");
+                    Destroy(chunks);
+
+                    // Initialize a new 3D array of chunks with size of the number of chunks
+                    Chunks = new Chunk[
+                        ConfigurationManager.Instance.World_Diameter,
+                        ConfigurationManager.Instance.World_Height,
+                        ConfigurationManager.Instance.World_Diameter];
+
+
+                    GenerateData();
+                    GenerateChunks();
+                    
+                }
+
+
+                if (bestNestSize > 20)
+                {
+                    pause = true;
+                }
                 GenerateAnts();
             }
         }
@@ -469,7 +522,7 @@ namespace Antymology.Terrain
 
             if (updateZ - 1 >= 0)
                 Chunks[updateX, updateY, updateZ - 1].updateNeeded = true;
-            if (updateX + 1 < Chunks.GetLength(2))
+            if (updateZ + 1 < Chunks.GetLength(2))
                 Chunks[updateX, updateY, updateZ + 1].updateNeeded = true;
         }
 

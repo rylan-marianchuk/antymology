@@ -22,6 +22,8 @@ namespace Antymology.Agents
 
         public void MakeNestBlock()
         {
+            if (Terrain.WorldManager.Instance.GetBlock((int)position.x, (int)position.y - 1, (int)position.z).GetType() == typeof(Terrain.NestBlock))
+                return;
             // Decrement health by one third
             this.updateHealth(-this.currhealth / 3);
             Terrain.WorldManager.Instance.SetBlock((int)position.x, (int)position.y-1, (int)position.z, new Terrain.NestBlock());
@@ -76,8 +78,8 @@ namespace Antymology.Agents
             }
             else
             {
-                // Do nothing
-
+                // Consume the below block
+                consumeBlock();
             }
 
             // Reduce health by frame amount

@@ -24,21 +24,21 @@ namespace Antymology.Agents
             // Randomly choose a connection
             int randomI = Random.Range(0, toMutate.connections.Count);
             // Disable this connection
-            NervousSystem.Connection gone = toMutate.connections[randomI];
+            Connection gone = toMutate.connections[randomI];
             toMutate.connections.Remove(gone);
 
 
             // Add two new connections
-            NervousSystem.Connection c1 = new NervousSystem.Connection(gone.id_in, toMutate.nodes.Count, 1, true, 0);
-            NervousSystem.Connection c2 = new NervousSystem.Connection(toMutate.nodes.Count, gone.id_out, gone.weight, true, 0);
+            Connection c1 = new Connection(gone.id_in, toMutate.nodes.Count, 1, true, 0);
+            Connection c2 = new Connection(toMutate.nodes.Count, gone.id_out, gone.weight, true, 0);
             toMutate.connections.Add(c1);
             toMutate.connections.Add(c2);
 
-            List<NervousSystem.Connection> newNodeC = new List<NervousSystem.Connection>();
+            List<Connection> newNodeC = new List<Connection>();
             newNodeC.Add(c1);
             newNodeC.Add(c2);
             // Add the new node
-            toMutate.nodes.Add(new NervousSystem.Node('h', 0, newNodeC));
+            toMutate.nodes.Add(new Node('h', 0, newNodeC, toMutate.nodes.Count));
         }
 
 
@@ -68,7 +68,7 @@ namespace Antymology.Agents
                     if (connectionExists(i, j, toMutate)) continue;
 
                     // May add new connection here on nodes i and j
-                    NervousSystem.Connection newC = new NervousSystem.Connection(i, j, true, 0);
+                    Connection newC = new Connection(i, j, true, 0);
                     toMutate.connections.Add(newC);
                     toMutate.nodes[i].attached.Add(newC);
                     toMutate.nodes[j].attached.Add(newC);

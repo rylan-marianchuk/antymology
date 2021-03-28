@@ -6,76 +6,6 @@ namespace Antymology.Agents
 {
     public class NervousSystem
     {
-        public struct Connection
-        {
-            public Connection(int id_in_, int id_out_, bool en, int innovate)
-            {
-                id_in = id_in_;
-                id_out = id_out_;
-                weight = Random.Range(-3f, 3f);
-                enabled = en;
-                innovationNum = innovate;
-            }
-
-            public Connection(int id_in_, int id_out_, float weight, bool en, int innovate)
-            {
-                id_in = id_in_;
-                id_out = id_out_;
-                this.weight = weight;
-                enabled = en;
-                innovationNum = innovate;
-            }
-
-
-            public int id_in;
-            public int id_out;
-            public float weight;
-            public bool enabled;
-            public int innovationNum;
-        }
-
-        public struct Node
-        {
-            // Node: 
-            // char c \in {'i', 'h', 'o'}
-            // float current value
-            // 'i': input, 'h': hidden, 'o': output
-            public char c;
-            public float val;
-            public List<Connection> attached;
-
-            // For DFS
-            private bool visited;
-            public Node(char _c, float _val, List<Connection> attached)
-            {
-                this.c = _c;
-                this.val = _val;
-                this.attached = new List<Connection>(attached);
-                this.visited = false;
-            }
-
-            public Node(char _c, List<Connection> attached)
-            {
-                this.c = _c;
-                this.val = 0;
-                this.attached = new List<Connection>(attached);
-                this.visited = false;
-            }
-
-            public Node(char _c)
-            {
-                this.c = _c;
-                this.val = 0;
-                this.attached = new List<Connection>();
-                this.visited = false;
-            }
-
-            public void setVisited() { this.visited = true; }
-            public void setUNvisited() { this.visited = false; }
-
-            public bool getVisited() { return this.visited; }
-            public void setVal(float v) { this.val = v; }
-        }
 
         // The data structures for the NEAT genome
 
@@ -93,13 +23,14 @@ namespace Antymology.Agents
             this.nodes = new List<Node>();
             this.outputNodes = new List<Node>();
             this.connections = new List<Connection>();
+            
             foreach (var n in nodes)
             {
-                Node newN = new Node(n.c, n.val, new List<Connection>(n.attached));
+                Node newN = new Node(n.c, n.val, new List<Connection>(n.attached), n.id);
                 this.nodes.Add(newN);
                 if (n.c == 'o')
                     outputNodes.Add(newN);
-
+               
             }
                 
 
@@ -112,22 +43,27 @@ namespace Antymology.Agents
 
         public NervousSystem()
         {
+            
             this.inputGridLength = ConfigurationManager.Instance.inputGridSize;
             this.nodes = new List<Node>(inputGridLength * inputGridLength);
             this.outputNodes = new List<Node>();
             this.connections = new List<Connection>();
             // Adding the input nodes
+            int count = 0;
             for (int i = 0; i < inputGridLength * inputGridLength; i++)
             {
-                Node anIn = new Node('i');
+                Node anIn = new Node('i', count);
                 nodes.Add(anIn);
+                count++;
             }
             // Health Input node
-            nodes.Add(new Node('i'));
+            nodes.Add(new Node('i', count));
+            count++;
             // Adding the output nodes
             for (int i = 0; i < 6; i++)
             {
-                Node anOut = new Node('o');
+                Node anOut = new Node('o', count);
+                count++;
                 nodes.Add(anOut);
                 outputNodes.Add(anOut);
             }
@@ -149,9 +85,10 @@ namespace Antymology.Agents
         public float[] perceive()
         {
             // Set each visited field in the nodes to be false. Only input nodes are always visited
-            foreach (Node node in nodes)
+            for (int j = 0; j < nodes.Count; j++)
             {
-                node.setUNvisited();
+                nodes[j].setUNvisited();
+                nodes[j].val = 0;
             }
 
             int off = (ConfigurationManager.Instance.inputGridSize - 1) / 2;
@@ -161,7 +98,7 @@ namespace Antymology.Agents
             {
                 for (int z = -off; z <= off; z++)
                 {
-                    Node thisN = new Node('i', nodes[i].attached);
+                    Node thisN = new Node('i', nodes[i].attached, i);
                     thisN.val = perceiveAtPixel(new Vector2Int(this.antOn.getPosition().x + x, this.antOn.getPosition().z + z));
                     thisN.setVisited();
                     nodes[i] = thisN;
@@ -169,21 +106,22 @@ namespace Antymology.Agents
                 }
             }
             // Health node
-            Node thisNHealth = new Node('i', nodes[i].attached);
+            Node thisNHealth = new Node('i', nodes[i].attached, i);
             thisNHealth.val = (float)antOn.getCurrentHealth() / this.antOn.getTotalHealth();
             thisNHealth.setVisited();
             nodes[i] = thisNHealth;
             // Depth first search from the output nodes to grab value. Update node and weight activation along the way
 
             Connection nullC = new Connection(-1, -1, false, 0);
-            return new float[6] {CalcNetwork(outputNodes[0], nullC), CalcNetwork(outputNodes[1], nullC), CalcNetwork(outputNodes[2], nullC),
-                                 CalcNetwork(outputNodes[3], nullC), CalcNetwork(outputNodes[4], nullC), CalcNetwork(outputNodes[5], nullC)};
+            return new float[6] {CalcNetwork(outputNodes[0], nullC, 0), CalcNetwork(outputNodes[1], nullC, 0), CalcNetwork(outputNodes[2], nullC, 0),
+                                 CalcNetwork(outputNodes[3], nullC, 0), CalcNetwork(outputNodes[4], nullC, 0), CalcNetwork(outputNodes[5], nullC, 0)};
         }
 
 
         private float perceiveAtPixel(Vector2Int topDownWorldPos)
         {
-            float queenIntensity = 1;
+            float queenIntensity = 3.5f;
+            float otherAntIntensity = 3.5f;
             float mulchIntensity = 0.5f;
             float elseIntensity = 0f;
             float nestIntensity = -0.25f;
@@ -305,21 +243,26 @@ namespace Antymology.Agents
         }
         */
 
-        private float CalcNetwork(Node start, Connection from)
+        private float CalcNetwork(Node start, Connection from, int recDepth)
         {
+            if (recDepth > 20)
+            {
+                bool somethingIsWrong = true;
+            }
             start.setVisited();
             float inp = 0;
             foreach (Connection Cneighbor in start.attached)
-            {
+            {   
                 if (Cneighbor.id_in == from.id_in && Cneighbor.id_out == from.id_out)
                     continue;
 
-                if (Cneighbor.id_in != nodes.IndexOf(start))
+                
+                if (Cneighbor.id_in != start.id)
                 {
                     // id_in it the neighbor node
                     if (!nodes[Cneighbor.id_in].getVisited())
                     {
-                        inp += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_in], Cneighbor);
+                        inp += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_in], Cneighbor, recDepth + 1);
                     }
                     else inp += Cneighbor.weight * nodes[Cneighbor.id_in].val;
                 }
@@ -328,7 +271,7 @@ namespace Antymology.Agents
                     // id_out is the neighbor node
                     if (!nodes[Cneighbor.id_out].getVisited())
                     {
-                        inp += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_out], Cneighbor);
+                        inp += Cneighbor.weight * CalcNetwork(nodes[Cneighbor.id_out], Cneighbor, recDepth + 1);
                     }
                     else inp += Cneighbor.weight * nodes[Cneighbor.id_out].val;
                 }

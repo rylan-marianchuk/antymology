@@ -33,6 +33,7 @@ namespace Antymology.Agents
 
         public int timeSinceLastAction = 0;
         public short colonyId;
+        private bool consumedLastTurn = false;
 
         //public Ant()
         void Awake()
@@ -48,15 +49,25 @@ namespace Antymology.Agents
         public void consumeBlock()
         {
             // Cannot consume block if another ant is here
-            if (colony.isOtherAntHere(this.position) || position.y == 0)
+            if (consumedLastTurn || colony.isOtherAntHere(this.position) || position.y <= 5)
             {
                 timeSinceLastAction++;
+                consumedLastTurn = false;
                 return;
             }
-               
+
+            if (!SeeMove(new Vector2Int(0, 1)) && !SeeMove(new Vector2Int(0, -1)) && !SeeMove(new Vector2Int(1, 0)) && !SeeMove(new Vector2Int(-1, 0)))
+            {
+                // Set this block now to be a mulch block
+                Terrain.WorldManager.Instance.SetBlock(position.x + 0, position.y, position.z + 0, new Terrain.MulchBlock());
+                // Must die
+                die();
+                               
+                return;
+            }
 
             this.timeSinceLastAction = 0;
-
+            consumedLastTurn = true;
             // If this consumption is mulch, refill the health
             if (Terrain.WorldManager.Instance.GetBlock(position.x, position.y - 1, position.z).GetType() == typeof(Terrain.MulchBlock))
                 this.currhealth = totalHealth;
@@ -70,7 +81,7 @@ namespace Antymology.Agents
         {
             this.dead = true;
             this.currhealth = 0;
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
 
         public void updateHealth(int amount)
@@ -113,12 +124,12 @@ namespace Antymology.Agents
             if (colony.queen != null)
             {
                 Ant queenScript = colony.queen.GetComponent<Ant>();
-                if (queenScript.position == this.position)
+                if (!queenScript.dead && queenScript.position == this.position)
                 {
-                    if (queenScript.currhealth + (int)0.75f * this.currhealth < queenScript.totalHealth)
+                    if (queenScript.currhealth + (int)(0.75f * this.currhealth) < queenScript.totalHealth)
                     {
-                        queenScript.updateHealth((int)0.75f * this.currhealth);
-                        this.updateHealth(-(int)0.75f * this.currhealth);
+                        queenScript.updateHealth((int)(0.75f * this.currhealth));
+                        this.updateHealth((int)(-0.75f * this.currhealth));
 
                         // No other choice but to do this 
                         return;
@@ -206,11 +217,26 @@ namespace Antymology.Agents
                 return;
             }
             this.timeSinceLastAction = 0;
-            // TODO ensure this bound is within the confines of the arena
+            
             this.setPosition(new Vector3Int(position.x + dir.x, airHeight, position.z + dir.y));
         }
 
+        protected bool SeeMove(Vector2Int dir)
+        {
 
+            // If Air block in desired direction is greater than 2, don't move
+            int airHeight = 0;
+
+            while (Terrain.WorldManager.Instance.GetBlock(position.x + dir.x, airHeight, position.z + dir.y).GetType() != typeof(Terrain.AirBlock)) { airHeight++; }
+
+            if (airHeight - position.y > 2)
+            {
+                //Debug.Log("Ant attempted to move but couldn't, next air spot is greater than 2.");
+                timeSinceLastAction++;
+                return false;
+            }
+            return true;
+        }
 
         // Visualize this nervous System when selected
         void OnDrawGizmosSelected()
