@@ -145,8 +145,8 @@ namespace Antymology.Agents
         private float perceiveAtPixel(Vector2Int topDownWorldPos)
         {
             float queenIntensity = 3.5f;
-            float otherAntIntensity = 3.5f;
-            float mulchIntensity = 0.5f;
+            float otherAntIntensity = 2.25f;
+            float mulchIntensity = 1f;
             float elseIntensity = 0f;
             float nestIntensity = -0.25f;
             float tooHighIntensity = -0.75f;
@@ -154,12 +154,21 @@ namespace Antymology.Agents
             if (antOn.colony.queen != null && antOn.colony.queen.GetComponent<Ant>().getPosition().x == topDownWorldPos.x && antOn.colony.queen.GetComponent<Ant>().getPosition().z == topDownWorldPos.y)
                 return queenIntensity;
 
+            // Check if other ant is at this location
+            foreach (var ant in this.antOn.colony.colony)
+            {
+                if (ant.GetComponent<Ant>().dead) continue;
+                if (ant.GetComponent<Ant>().getPosition().x == topDownWorldPos.x && ant.GetComponent<Ant>().getPosition().z == topDownWorldPos.y)
+                    return otherAntIntensity;
+            }
+
+            
             // Get the top most block
             int airHeight = 0;
 
             while (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight, topDownWorldPos.y).GetType() != typeof(Terrain.AirBlock)) { airHeight++; }
 
-
+            /*
             int dx = Mathf.Abs(topDownWorldPos.x - antOn.getPosition().x);
             int dz = Mathf.Abs(topDownWorldPos.y - antOn.getPosition().z);
             if ((dx == 1 && dz == 0) || (dx == 0 && dz == 1) || (dx == 1 && dz == 1))
@@ -168,7 +177,7 @@ namespace Antymology.Agents
                 if (airHeight - antOn.getPosition().y > 2)
                     return tooHighIntensity;
             }
-
+            */
 
             // Now check the block right below this air block
             if (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight-1, topDownWorldPos.y).GetType() == typeof(Terrain.MulchBlock))
@@ -205,16 +214,6 @@ namespace Antymology.Agents
         }
 
 
-
-        /// <summary>
-        /// Allow for permanent storage of this genome by writing to a file
-        /// </summary>
-        public void writeGenome2File()
-        {
-
-        }
-
-
         /// <summary>
         /// Activation for neural network
         /// 
@@ -226,7 +225,6 @@ namespace Antymology.Agents
             return 1f / (1 + Mathf.Exp(-4.5f * weightedSum)) - 0.5f;
         }
 
-
         /// <summary>
         /// Called on each output node to compute the network.
         /// 
@@ -234,45 +232,8 @@ namespace Antymology.Agents
         /// </summary>
         /// <param name="start">the output node to compute</param>
         /// <returns>the float value of the output node</returns>
-        /*
-        private float DFSonNetwork(Node start)
-        {
-
-            Stack<Node> S = new Stack<Node>();
-            S.Push(start);
-            while(!(S.Count == 0))
-            {
-                Node u = S.Pop();
-                if (!u.getVisited())
-                {
-                    u.setVisited();
-                    foreach (Connection Cneighbor in u.attached)
-                    {
-                        if (Cneighbor.id_in != nodes.IndexOf(u))
-                        {
-                            // id_in it the neighbor node
-                            if (!nodes[Cneighbor.id_in].getVisited()) S.Push(nodes[Cneighbor.id_in]);
-                            else u.val += Cneighbor.weight * nodes[Cneighbor.id_in].val;
-                        }
-                        else
-                        {
-                            // id_out is the neighbor node
-                            if (!nodes[Cneighbor.id_out].getVisited()) S.Push(nodes[Cneighbor.id_out]);
-                            else u.val += Cneighbor.weight * nodes[Cneighbor.id_out].val;
-                        }
-                    }
-                }
-            }
-
-        }
-        */
-
         private float CalcNetwork(Node start, Connection from, int recDepth)
         {
-            if (recDepth > 20)
-            {
-                bool somethingIsWrong = true;
-            }
             start.setVisited();
             float inp = 0;
             foreach (Connection Cneighbor in start.attached)

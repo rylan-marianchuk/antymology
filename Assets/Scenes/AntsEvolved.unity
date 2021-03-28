@@ -411,7 +411,7 @@ MonoBehaviour:
   Tile_Map_Unit_Ratio: 0.25
   Number_Of_Acidic_Regions: 10
   Acidic_Region_Radius: 5
-  Number_Of_Conatiner_Spheres: 5
+  Number_Of_Conatiner_Spheres: 0
   Conatiner_Sphere_Radius: 10
   antsPerColony: 20
   spawnRadius: 8
@@ -468,7 +468,7 @@ MonoBehaviour:
   healthReduction: 1
   connectionMutationRate: 0.3
   nodeMutationRate: 0.2
-  loadTopColony: 0
+  loadTopColony: 1
 --- !u!4 &1503258855
 Transform:
   m_ObjectHideFlags: 0

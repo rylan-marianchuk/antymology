@@ -1,7 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
+
+[Serializable]
 public class Connection
 {
     public Connection(int id_in_, int id_out_, bool en, int innovate)
@@ -22,6 +25,7 @@ public class Connection
         innovationNum = innovate;
     }
 
+
     /**
      * 
      * Pull a single float from the specified Gaussian Distribution which uses Box-Muller transform.
@@ -30,8 +34,8 @@ public class Connection
     private float sampleGaussian(float mean, float sd)
     {
         // Two uniform random variables
-        float u1 = Random.Range(0.00001f, 0.99999f);
-        float u2 = Random.Range(0.00001f, 0.99999f);
+        float u1 = UnityEngine.Random.Range(0.00001f, 0.99999f);
+        float u2 = UnityEngine.Random.Range(0.00001f, 0.99999f);
 
         // Box-Muller transform
         float z = Mathf.Sqrt(-2f * Mathf.Log(u1)) * Mathf.Cos(2 * Mathf.PI * u2);

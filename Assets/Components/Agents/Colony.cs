@@ -54,6 +54,7 @@ namespace Antymology.Agents
         /// </summary>
         public Colony(NervousSystem antNS, NervousSystem queenNS)
         {
+            colony = new List<GameObject>();
             putColony(ConfigurationManager.Instance.spawnRadius, antNS, queenNS);
         }
 
@@ -126,13 +127,17 @@ namespace Antymology.Agents
             {
                 if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
                 {
-                    //NeuroEvolution.MutateByConnection(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
-                    NeuroEvolution.MutateByConnection(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
+                    if (singleParent.bestAnt == null)
+                        NeuroEvolution.MutateByConnection(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
+                    else 
+                        NeuroEvolution.MutateByConnection(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
                 }
                 else if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
                 {
-                    //NeuroEvolution.MutateByNode(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
-                    NeuroEvolution.MutateByNode(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
+                    if (singleParent.bestAnt == null)
+                        NeuroEvolution.MutateByNode(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
+                    else
+                        NeuroEvolution.MutateByNode(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
                 }
 
                 NervousSystem newNS = new NervousSystem(singleParent.colony[i].GetComponent<Ant>().getNervousSystem().nodes,

@@ -170,11 +170,12 @@ namespace Antymology.Terrain
             
         }
         private bool pause = false;
+        private int prevBestNestSize = 0;
         private void FixedUpdate()
         {
             if (ConfigurationManager.Instance.loadTopColony)
             {
-                if (!Input.GetKeyUp(KeyCode.Plus))
+                if (Input.GetKeyUp(KeyCode.KeypadPlus))
                     topColony.MoveColony();
 
                 return;
@@ -184,7 +185,7 @@ namespace Antymology.Terrain
             if (Input.GetKeyUp(KeyCode.End))
                 pause = !pause;
 
-            if (pause && !Input.GetKeyUp(KeyCode.Minus))
+            if (pause && !Input.GetKeyUp(KeyCode.KeypadPlus))
                 return;
             // Update all ants
 
@@ -232,9 +233,19 @@ namespace Antymology.Terrain
 
                 
 
-                Debug.Log("On generation " + generation.ToString() + " the best colony produced " + bestNestSize.ToString() + " blocks.");
-                Debug.Log("BUT no new top colony since generation " + noNewTopColonySince.ToString());
-                if (generation % 5 == 0)
+                Debug.Log("On generation " + generation.ToString() + " the best colony produced " + Mathf.Max(new float[] { colonies[0].getTotalNestBlocks(), colonies[1].getTotalNestBlocks(), colonies[2].getTotalNestBlocks(), colonies[3].getTotalNestBlocks()}).ToString() + " blocks.");
+                Debug.Log("BUT no new top colony since generation " + noNewTopColonySince.ToString() + " with a global best of " + bestNestSize.ToString());
+
+                if (bestNestSize > prevBestNestSize)
+                {
+                    prevBestNestSize = bestNestSize;
+                    Serialize(new Agents.SerializableNS(topColony.bestAnt.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "ant.dat");
+                    Serialize(new Agents.SerializableNS(topColony.queen.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "queen.dat");
+                }
+
+
+                // Resetting the world
+                if (generation % 10 == 0)
                 {
                        
                     // Reset the world. Every 20 generations
@@ -273,12 +284,6 @@ namespace Antymology.Terrain
                     
                 }
 
-
-                if (bestNestSize > 0)
-                {
-                    Serialize(new Agents.SerializableNS(topColony.bestAnt.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "ant.dat");
-                    Serialize(new Agents.SerializableNS(topColony.queen.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "queen.dat");
-                }
                 GenerateAnts();
             }
         }
