@@ -32,6 +32,7 @@ namespace Antymology.Agents
         protected NervousSystem ns;
 
         public int timeSinceLastAction = 0;
+        public int timesTouchedQueen = 0;
         public short colonyId;
         private bool consumedLastTurn = false;
 
@@ -126,12 +127,13 @@ namespace Antymology.Agents
                 Ant queenScript = colony.queen.GetComponent<Ant>();
                 if (!queenScript.dead && queenScript.position == this.position)
                 {
+                    timesTouchedQueen++;
                     if (queenScript.currhealth + (int)(0.75f * this.currhealth) < queenScript.totalHealth)
                     {
                         queenScript.updateHealth((int)(0.75f * this.currhealth));
                         this.updateHealth((int)(-0.75f * this.currhealth));
 
-                        // No other choice but to do this 
+                        // No other choice but to exchange health
                         return;
                     }
                 }

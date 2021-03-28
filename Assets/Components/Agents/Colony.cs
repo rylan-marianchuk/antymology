@@ -1,16 +1,21 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 
 namespace Antymology.Agents
 {
+    
     public class Colony
     {
         // All these gameobjects are regular ants
         public List<GameObject> colony;
 
         public GameObject queen;
+
+        // The top ant is the one who touches the queen the most during its life.
+        public GameObject bestAnt;
 
         public short colonyId;
 
@@ -38,9 +43,18 @@ namespace Antymology.Agents
             colony = new List<GameObject>();
             for (int i = 0; i < ConfigurationManager.Instance.antsPerColony; i++)
             {
-                colony.Add(Object.Instantiate(Terrain.WorldManager.Instance.antPrefab));
+                colony.Add(UnityEngine.Object.Instantiate(Terrain.WorldManager.Instance.antPrefab));
             }
-            queen = Object.Instantiate(Terrain.WorldManager.Instance.queenAntPrefab);
+            queen = UnityEngine.Object.Instantiate(Terrain.WorldManager.Instance.queenAntPrefab);
+        }
+
+
+        /// <summary>
+        /// Used when loading the top colony
+        /// </summary>
+        public Colony(NervousSystem antNS, NervousSystem queenNS)
+        {
+            putColony(ConfigurationManager.Instance.spawnRadius, antNS, queenNS);
         }
 
         public void incrementNestBlocks()
@@ -59,6 +73,17 @@ namespace Antymology.Agents
             {
                 if (ant == null) continue;
                 if (!ant.GetComponent<Ant>().dead) return false;
+            }
+            // Update the best ant
+
+            int max = -1;
+            foreach (var ant in this.colony)
+            {
+                if (ant.GetComponent<Ant>().timesTouchedQueen > max)
+                {
+                    this.bestAnt = ant;
+                    max = ant.GetComponent<Ant>().timesTouchedQueen;
+                }
             }
             return true;
         }
@@ -80,8 +105,8 @@ namespace Antymology.Agents
             // Choose a center location in this colony
             if (randomChoice)
             {
-                c = new Vector2Int(Random.Range(spawnRadius / 2, l/2 - spawnRadius / 2),
-                                   Random.Range(spawnRadius / 2, l/2 - spawnRadius / 2));
+                c = new Vector2Int(UnityEngine.Random.Range(spawnRadius / 2, l/2 - spawnRadius / 2),
+                                   UnityEngine.Random.Range(spawnRadius / 2, l/2 - spawnRadius / 2));
             }
             else
             {
@@ -99,13 +124,15 @@ namespace Antymology.Agents
             // Spawn all ants
             for (int i = 0; i < ConfigurationManager.Instance.antsPerColony; i++)
             {
-                if (Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+                if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
                 {
-                    NeuroEvolution.MutateByConnection(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
+                    //NeuroEvolution.MutateByConnection(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
+                    NeuroEvolution.MutateByConnection(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
                 }
-                else if (Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
+                else if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
                 {
-                    NeuroEvolution.MutateByNode(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
+                    //NeuroEvolution.MutateByNode(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
+                    NeuroEvolution.MutateByNode(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
                 }
 
                 NervousSystem newNS = new NervousSystem(singleParent.colony[i].GetComponent<Ant>().getNervousSystem().nodes,
@@ -114,17 +141,38 @@ namespace Antymology.Agents
             }
 
             // Spawning the queen
-            if (Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+            if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
             {
                 NeuroEvolution.MutateByConnection(singleParent.queen.GetComponent<Ant>().getNervousSystem());
             }
-            else if (Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
+            else if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
             {
                 NeuroEvolution.MutateByNode(singleParent.queen.GetComponent<Ant>().getNervousSystem());
             }
             NervousSystem newNSqueen = new NervousSystem(singleParent.queen.GetComponent<Ant>().getNervousSystem().nodes, 
                                                          singleParent.queen.GetComponent<Ant>().getNervousSystem().connections);
             
+            spawnAnt(c, spawnRadius, newNSqueen, true);
+
+        }
+
+        public void putColony(int spawnRadius, NervousSystem antNS, NervousSystem queenNS)
+        {
+
+            int l = ConfigurationManager.Instance.Chunk_Diameter * ConfigurationManager.Instance.World_Diameter;
+            Vector2Int c = new Vector2Int(UnityEngine.Random.Range(spawnRadius / 2, l / 2 - spawnRadius / 2),
+                                   UnityEngine.Random.Range(spawnRadius / 2, l / 2 - spawnRadius / 2));
+
+
+            // Spawn all ants
+            for (int i = 0; i < ConfigurationManager.Instance.antsPerColony; i++)
+            {
+                NervousSystem newNS = new NervousSystem(antNS.nodes, antNS.connections);
+                spawnAnt(c, spawnRadius, newNS, false);
+            }
+            // Spawning queen
+            NervousSystem newNSqueen = new NervousSystem(queenNS.nodes, queenNS.connections);
+
             spawnAnt(c, spawnRadius, newNSqueen, true);
 
         }
@@ -137,8 +185,8 @@ namespace Antymology.Agents
         /// <param name="isQueen"></param>
         private void spawnAnt(Vector2Int c, int spawnRadius, NervousSystem toHave, bool isQueen)
         {
-            int rx = Random.Range(-spawnRadius, spawnRadius);
-            int rz = Random.Range(-spawnRadius, spawnRadius);
+            int rx = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
+            int rz = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
 
             // Finding the highest airblock here
             int y = 0;

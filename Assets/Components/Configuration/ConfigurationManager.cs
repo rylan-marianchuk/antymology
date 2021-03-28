@@ -93,5 +93,8 @@ public class ConfigurationManager : Singleton<ConfigurationManager>
     public float nodeMutationRate = 0.2f;
 
 
+    [Header("If checked, no evolutionary search is run, instead the topColony previously saved is loaded to view in reduced speed.")]
+    public bool loadTopColony = false;
+
 
 }

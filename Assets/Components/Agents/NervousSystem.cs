@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 namespace Antymology.Agents
 {
+
     public class NervousSystem
     {
 
@@ -17,6 +19,28 @@ namespace Antymology.Agents
         public Ant antOn;
 
         public int inputGridLength;
+
+        public NervousSystem(SerializableNS serializableNS)
+        {
+            this.nodes = new List<Node>();
+            this.outputNodes = new List<Node>();
+            this.connections = new List<Connection>();
+
+            foreach (var n in serializableNS.nodes)
+            {
+                Node newN = new Node(n.c, n.val, new List<Connection>(n.attached), n.id);
+                this.nodes.Add(newN);
+                if (n.c == 'o')
+                    outputNodes.Add(newN);
+
+            }
+
+
+
+            foreach (var c in serializableNS.connections)
+                this.connections.Add(new Connection(c.id_in, c.id_out, c.enabled, c.innovationNum));
+
+        }
 
         public NervousSystem(List<Node> nodes, List<Connection> connections)
         {

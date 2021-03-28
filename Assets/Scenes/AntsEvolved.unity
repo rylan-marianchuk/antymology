@@ -421,6 +421,7 @@ MonoBehaviour:
   healthReduction: 1
   connectionMutationRate: 0.3
   nodeMutationRate: 0.2
+  loadTopColony: 0
 --- !u!1 &1503258853
 GameObject:
   m_ObjectHideFlags: 0
@@ -467,6 +468,7 @@ MonoBehaviour:
   healthReduction: 1
   connectionMutationRate: 0.3
   nodeMutationRate: 0.2
+  loadTopColony: 0
 --- !u!4 &1503258855
 Transform:
   m_ObjectHideFlags: 0

@@ -2,7 +2,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace Antymology.Terrain
 {
@@ -93,15 +96,69 @@ namespace Antymology.Terrain
             Camera.main.transform.position = new Vector3(0 / 2, Blocks.GetLength(1), 0);
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
-            colonies.Add(null);
-            colonies.Add(null);
-            colonies.Add(null);
-            colonies.Add(null);
-            GenerateAnts();
+            if (ConfigurationManager.Instance.loadTopColony)
+            {
+                topColony = new Agents.Colony(Deserialize("ant.dat"), Deserialize("queen.dat"));
+            }
+            else
+            {
+                colonies.Add(null);
+                colonies.Add(null);
+                colonies.Add(null);
+                colonies.Add(null);
+                GenerateAnts();
+            }
+
             
         }
 
+        void Serialize(Agents.SerializableNS ns, string outFile)
+        {
+            FileStream fs = new FileStream(outFile, FileMode.Create);
 
+            // Construct a BinaryFormatter and use it to serialize the data to the stream.
+            BinaryFormatter formatter = new BinaryFormatter();
+            try
+            {
+                formatter.Serialize(fs, ns);
+            }
+            catch (SerializationException e)
+            {
+                Console.WriteLine("Failed to serialize. Reason: " + e.Message);
+                throw;
+            }
+            finally
+            {
+                fs.Close();
+            }
+        }
+
+        Agents.NervousSystem Deserialize(string openFile)
+        {
+            // Declare the hashtable reference.
+            Agents.SerializableNS ns = null;
+
+            // Open the file containing the data that you want to deserialize.
+            FileStream fs = new FileStream(openFile, FileMode.Open);
+            try
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+
+                // Deserialize the hashtable from the file and
+                // assign the reference to the local variable.
+                ns = (Agents.SerializableNS)formatter.Deserialize(fs);
+                return new Agents.NervousSystem(ns);
+            }
+            catch (SerializationException e)
+            {
+                Console.WriteLine("Failed to deserialize. Reason: " + e.Message);
+                throw;
+            }
+            finally
+            {
+                fs.Close();
+            }
+        }
 
 
         private void GenerateAnts()
@@ -115,8 +172,15 @@ namespace Antymology.Terrain
         private bool pause = false;
         private void FixedUpdate()
         {
-            //if (!Input.GetKeyUp(KeyCode.End))
-                //return;
+            if (ConfigurationManager.Instance.loadTopColony)
+            {
+                if (!Input.GetKeyUp(KeyCode.Plus))
+                    topColony.MoveColony();
+
+                return;
+            }
+
+
             if (Input.GetKeyUp(KeyCode.End))
                 pause = !pause;
 
@@ -210,9 +274,10 @@ namespace Antymology.Terrain
                 }
 
 
-                if (bestNestSize > 20)
+                if (bestNestSize > 0)
                 {
-                    pause = true;
+                    Serialize(new Agents.SerializableNS(topColony.bestAnt.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "ant.dat");
+                    Serialize(new Agents.SerializableNS(topColony.queen.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "queen.dat");
                 }
                 GenerateAnts();
             }
