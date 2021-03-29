@@ -1,7 +1,7 @@
 # Assignment 3: Antymology
 
 ## Introduction
-I have implemented an Evolutionary Algorithm as required to solve a colony optimization problem. The outcome being maximized is nest blocks produced by the queen during its lifetime. The constraints are the described behaviour of the agents outlined below.
+I have implemented an Evolutionary Algorithm as required to solve a colony optimization problem. The outcome being maximized is nest blocks produced by the queen during its lifetime. The constraints are the described behaviour of the agents outlined in the assignment description.
 
 The unit of evolution here is the object **Colony**, which consists of 20 **Ants** and one **QueenAnt**. Below is a freshly spawned colony:
 
@@ -20,6 +20,34 @@ Stanley, Kenneth O & Miikkulainen, Risto, 2002. Evolving Neural Networks through
 The approach to 'Augment Topologies' means to start with no hidden neurons or connections, and incrementally mutate by adding nodes or connections.
 
 ![Ants](Images/mutate.png)
+
+These two fundamental genetic operators can be sequentially applied to the *NervousSystem* of each ant. Over many generations the aim is for the Colony to search for each of its ants *NervousSystem*'s that maximize the nest block produciton of the queen. 
+
+## Saving with Deserialization and Serialization
+In order to verify and reuse the top performing colony in the evolutionary search, it must be saved to the disk for permanent storage beyond the game in Unity. C# provides the ability to Serialize class graphs which only contain primitive data types as attributes. I then Serialized only the *NervousSystem* class and then attached them to monobehaviours on load.
+
+## How to observethe Top Colony
+To load the top performing colony from attempt 2, the WorldManager object in the scene contains a checkbox for Load Top Colony. If this is checked, the best *NervousSystem*'s I found are loaded (deserialized) into a single colony. You can then fly over to where they are spawned and progress time on your command by pressing the **'+'** key on the keypad.
+
+## Evolution Attempts
+What I learned and changed:
+
+### Attempt 1
+The fitness function was defined as only total nest blocks produced. 4 Colonies were spawned in equal distance apart and on each frame, the Act() function was called on each ant.
+
+The Act() function completes the sensation to motor sequence that any generic nervous system accomplishes. The sense input was prescribed the following values:
+            float queenIntensity = 3.5f;
+            float otherAntIntensity = 2.25f;
+            float mulchIntensity = 1f;
+            float elseIntensity = 0f;
+            float nestIntensity = -0.25f;
+where a location recieved that value if it held a queen, other ant, mulch block, nest block, etc. Given only these values from the input layer the *NervousSystem* was computed, and the max of the six output nodes were taken as a motor decision. 
+
+**Best Fitness** : 13
+**Total Generations** : 250
+
+### Attempt 1
+
 
 ## Cooper's Description ------------------------------------
 
