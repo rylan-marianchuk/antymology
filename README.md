@@ -5,7 +5,7 @@ I have implemented an Evolutionary Algorithm as required to solve a colony optim
 
 The unit of evolution here is the object **Colony**, which consists of 20 **Ants** and one **QueenAnt**. Below is a freshly spawned colony:
 
-![Ants](Images/colony.png)
+![Ants](Images/colony.PNG)
 
 Each **Ant** and **QueenAnt** holds its own *NervousSystem*, a structure which senses its surroundings and produces an output on each time step. This 
 
