@@ -11,7 +11,7 @@ Each **Ant** and **QueenAnt** holds its own *NervousSystem*, a structure which s
 
 The input for the all ants *NervousSystem* is a 9 by 9 square around its local position, where it sits in the centre. Each node takes on the global pheromone deposit. A location (square) will have high pheromone concetrations if an ant has been recently there.
 
-![Ants](Images/ant_terrain.png)
+![Ants](Images/ant_terrain.jpg)
 
 Each Nervous System will by modified through evolution to produce emergent behaviour. The way which this has been accomplished is through the following seminal paper:
 
