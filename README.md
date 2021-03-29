@@ -3,9 +3,23 @@
 ## Introduction
 I have implemented an Evolutionary Algorithm as required to solve a colony optimization problem. The outcome being maximized is nest blocks produced by the queen during its lifetime. The constraints are the described behaviour of the agents outlined below.
 
-The unit of evolution here is the object **Colony**, which consists of 20 **Ants** and one **QueenAnt**. 
+The unit of evolution here is the object **Colony**, which consists of 20 **Ants** and one **QueenAnt**. Below is a freshly spawned colony:
 
+![Ants](Images/Ants.gif)
 
+Each **Ant** and **QueenAnt** holds its own *NervousSystem*, a structure which senses its surroundings and produces an output on each time step. This 
+
+The input for the all ants *NervousSystem* is a 9 by 9 square around its local position, where it sits in the centre. Each node takes on the global pheromone deposit. A location (square) will have high pheromone concetrations if an ant has been recently there.
+
+![Ants](Images/ant_terrain.png)
+
+Each Nervous System will by modified through evolution to produce emergent behaviour. The way which this has been accomplished is through the following seminal paper:
+
+Stanley, Kenneth O & Miikkulainen, Risto, 2002. Evolving Neural Networks through Augmenting Topologies. *Evolutionary computation*, 10(2), pp.99–127.
+
+The approach to 'Augment Topologies' means to start with no hidden neurons or connections, and incrementally mutate by adding nodes or connections.
+
+![Ants](Images/mutate.png)
 
 ## Cooper's Description ------------------------------------
 
