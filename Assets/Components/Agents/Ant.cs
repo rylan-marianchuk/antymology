@@ -33,6 +33,7 @@ namespace Antymology.Agents
 
         public int timeSinceLastAction = 0;
         public int timesTouchedQueen = 0;
+        public int mulchBlocksConsumed = 0;
         public short colonyId;
         private bool consumedLastTurn = false;
 
@@ -71,7 +72,11 @@ namespace Antymology.Agents
             consumedLastTurn = true;
             // If this consumption is mulch, refill the health
             if (Terrain.WorldManager.Instance.GetBlock(position.x, position.y - 1, position.z).GetType() == typeof(Terrain.MulchBlock))
+            {
+                mulchBlocksConsumed++;
                 this.currhealth = totalHealth;
+            }
+                
 
             Terrain.WorldManager.Instance.SetBlock(position.x, position.y - 1, position.z, new Terrain.AirBlock());
             this.setPosition(new Vector3Int(position.x, position.y - 1, position.z));
@@ -102,9 +107,16 @@ namespace Antymology.Agents
 
         public Vector3Int getPosition(){ return this.position; } 
         public void setPosition(Vector3Int p) 
-        { 
+        {
+            if (p.x > 127 || p.x < 0 || p.z > 127 || p.z < 0)
+                return;
+
             this.position = p;
             this.gameObject.transform.position = new Vector3(p.x, p.y, p.z);
+            if (this.colony.queen == null || gameObject != this.colony.queen)
+                colony.pheromoneDeposit[p.x, p.z] = ConfigurationManager.Instance.AntPheromone;
+            else
+                colony.pheromoneDeposit[p.x, p.z] = ConfigurationManager.Instance.QueenAntPheromone;
         }
 
         public void setColony(Colony c) { this.colony = c; }

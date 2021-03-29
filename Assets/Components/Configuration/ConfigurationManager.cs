@@ -70,7 +70,7 @@ public class ConfigurationManager : Singleton<ConfigurationManager>
     /// Radius of blocks around the ant it will take as input into its nervous system
     /// MUST be an odd number
     /// </summary>
-    public int inputGridSize = 7;
+    public int inputGridSize = 11;
 
     /// <summary>
     /// Number of evolving simultaneous colonies in the world
@@ -92,6 +92,8 @@ public class ConfigurationManager : Singleton<ConfigurationManager>
 
     public float nodeMutationRate = 0.2f;
 
+    public float AntPheromone = 1.25f;
+    public float QueenAntPheromone = 3f;
 
     [Header("If checked, no evolutionary search is run, instead the topColony previously saved is loaded to view in reduced speed.")]
     public bool loadTopColony = false;

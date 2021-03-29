@@ -8,7 +8,9 @@ namespace Antymology.Agents
     /// <summary>
     /// Class that works on a population of nervous systems to evolve copmlexity and fitness
     /// 
-    /// Implementation from NEAT paper found here
+    /// Implementation from NEAT paper found here:
+    /// Stanley, Kenneth O & Miikkulainen, Risto, 2002. Evolving Neural Networks through Augmenting Topologies. 
+    /// Evolutionary computation, 10(2), pp.99–127.
     /// </summary>
     public class NeuroEvolution
     {
@@ -29,8 +31,8 @@ namespace Antymology.Agents
 
 
             // Add two new connections
-            Connection c1 = new Connection(gone.id_in, toMutate.nodes.Count, 1, true, 0);
-            Connection c2 = new Connection(toMutate.nodes.Count, gone.id_out, gone.weight, true, 0);
+            Connection c1 = new Connection(gone.id_in, toMutate.nodes.Count, 1, true, ++toMutate.innovationNumberNow);
+            Connection c2 = new Connection(toMutate.nodes.Count, gone.id_out, gone.weight, true, ++toMutate.innovationNumberNow);
             toMutate.connections.Add(c1);
             toMutate.connections.Add(c2);
 
@@ -68,7 +70,7 @@ namespace Antymology.Agents
                     if (connectionExists(i, j, toMutate)) continue;
 
                     // May add new connection here on nodes i and j
-                    Connection newC = new Connection(i, j, true, 0);
+                    Connection newC = new Connection(i, j, true, ++toMutate.innovationNumberNow);
                     toMutate.connections.Add(newC);
                     toMutate.nodes[i].attached.Add(newC);
                     toMutate.nodes[j].attached.Add(newC);
@@ -82,7 +84,9 @@ namespace Antymology.Agents
 
 
 
-
+        /// <summary>
+        /// Return bool whether two nodes are connected in the Nervous system
+        /// </summary>
         private static bool connectionExists(int i, int j, NervousSystem ns)
         {
             foreach (var c in ns.connections)
@@ -92,5 +96,20 @@ namespace Antymology.Agents
             }
             return false;
         }
+
+
+        /// <summary>
+        /// Return the compatibility distance between two nervous systems, used for speciation
+        /// 
+        /// See section 3.3 Protecting Innovation through Speciation in (Stanley et. al)
+        /// </summary>
+        /// <param name="n1"></param>
+        /// <param name="n2"></param>
+        /// <returns></returns>
+        private float compatDistiance(NervousSystem n1, NervousSystem n2)
+        {
+            return 0;
+        }
+
     }
 }

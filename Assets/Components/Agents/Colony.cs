@@ -19,6 +19,10 @@ namespace Antymology.Agents
 
         public short colonyId;
 
+
+        public float[,] pheromoneDeposit = new float[ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter, 
+            ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter];
+
         private int totalNestBlocks = 0;
 
 
@@ -75,8 +79,8 @@ namespace Antymology.Agents
                 if (ant == null) continue;
                 if (!ant.GetComponent<Ant>().dead) return false;
             }
-            // Update the best ant
 
+            // Update the best ant
             int max = -1;
             foreach (var ant in this.colony)
             {
@@ -125,38 +129,45 @@ namespace Antymology.Agents
             // Spawn all ants
             for (int i = 0; i < ConfigurationManager.Instance.antsPerColony; i++)
             {
-                if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+
+                NervousSystem newNS;
+                if (singleParent.bestAnt == null)
+                    newNS = new NervousSystem(singleParent.colony[i].GetComponent<Ant>().getNervousSystem().nodes,
+                                                        singleParent.colony[i].GetComponent<Ant>().getNervousSystem().connections);
+                else
+                    newNS = new NervousSystem(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem().nodes,
+                                                            singleParent.bestAnt.GetComponent<Ant>().getNervousSystem().connections);
+                for (int k = 0; k < UnityEngine.Random.Range(1, 5); k++)
                 {
-                    if (singleParent.bestAnt == null)
-                        NeuroEvolution.MutateByConnection(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
-                    else 
-                        NeuroEvolution.MutateByConnection(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
-                }
-                else if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
-                {
-                    if (singleParent.bestAnt == null)
-                        NeuroEvolution.MutateByNode(singleParent.colony[i].GetComponent<Ant>().getNervousSystem());
-                    else
-                        NeuroEvolution.MutateByNode(singleParent.bestAnt.GetComponent<Ant>().getNervousSystem());
+                    if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+                    {
+                        NeuroEvolution.MutateByConnection(newNS);
+                    }
+                    if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
+                    {
+                        NeuroEvolution.MutateByConnection(newNS);
+                    }
+
                 }
 
-                NervousSystem newNS = new NervousSystem(singleParent.colony[i].GetComponent<Ant>().getNervousSystem().nodes,
-                                                        singleParent.colony[i].GetComponent<Ant>().getNervousSystem().connections);
                 spawnAnt(c, spawnRadius, newNS, false);
             }
 
-            // Spawning the queen
-            if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+            NervousSystem newNSqueen = new NervousSystem(singleParent.queen.GetComponent<Ant>().getNervousSystem().nodes,
+                                             singleParent.queen.GetComponent<Ant>().getNervousSystem().connections);
+
+            for (int k = 0; k < UnityEngine.Random.Range(1, 5); k++)
             {
-                NeuroEvolution.MutateByConnection(singleParent.queen.GetComponent<Ant>().getNervousSystem());
+                // Spawning the queen
+                if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.connectionMutationRate)
+                {
+                    NeuroEvolution.MutateByConnection(newNSqueen);
+                }
+                if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
+                {
+                    NeuroEvolution.MutateByNode(newNSqueen);
+                }
             }
-            else if (UnityEngine.Random.Range(0f, 1f) < ConfigurationManager.Instance.nodeMutationRate)
-            {
-                NeuroEvolution.MutateByNode(singleParent.queen.GetComponent<Ant>().getNervousSystem());
-            }
-            NervousSystem newNSqueen = new NervousSystem(singleParent.queen.GetComponent<Ant>().getNervousSystem().nodes, 
-                                                         singleParent.queen.GetComponent<Ant>().getNervousSystem().connections);
-            
             spawnAnt(c, spawnRadius, newNSqueen, true);
 
         }
@@ -206,11 +217,13 @@ namespace Antymology.Agents
                 this.queen = obj;
             }
             else
+            {
                 obj = UnityEngine.Object.Instantiate(Terrain.WorldManager.Instance.antPrefab, new Vector3(c.x + rx, y, c.y + rz), Quaternion.identity);
-            
-                
-            obj.GetComponent<Ant>().setPosition(new Vector3Int(c.x + rx, y, c.y + rz));
+            }
+
+
             obj.GetComponent<Ant>().setColony(this);
+            obj.GetComponent<Ant>().setPosition(new Vector3Int(c.x + rx, y, c.y + rz));
             obj.GetComponent<Ant>().setNervousSystem(toHave);
             obj.GetComponent<Ant>().colonyId = this.colonyId;
             toHave.antOn = obj.GetComponent<Ant>();
@@ -228,6 +241,7 @@ namespace Antymology.Agents
             {
                 if (ant == null) continue;
                 if (ant.GetComponent<Ant>().getPosition() == p) count++;
+                if (count >= 2) return true;
             }
             return count >= 2;
         }
@@ -235,6 +249,17 @@ namespace Antymology.Agents
 
         public void MoveColony()
         {
+            // First decrement pheromone
+            float decrement = 0.01f;
+            for (int i = 0; i < ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter; i++)
+            {
+                for (int j = 0; j < ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter; j++)
+                {
+                    if (pheromoneDeposit[i, j] - decrement < 0) pheromoneDeposit[i, j] = 0;
+                    else pheromoneDeposit[i, j] -= decrement;
+                }
+            }
+
             foreach (GameObject ant in this.colony)
             {
                 if (ant == queen)
@@ -265,6 +290,27 @@ namespace Antymology.Agents
                 UnityEngine.Object.Destroy(gameObject);
             }
             UnityEngine.Object.Destroy(queen); 
+        }
+
+
+
+        /// <summary>
+        /// The fitness of this colony, to be called once all ants are dead.
+        /// </summary>
+        /// <returns></returns>
+        public float fitness()
+        {
+            float fitness = 0;
+            foreach (var ant in colony)
+            {
+                fitness += ant.GetComponent<Ant>().mulchBlocksConsumed * 0.2f;
+                fitness += ant.GetComponent<Ant>().timesTouchedQueen * 0.2f;
+
+            }
+            fitness += queen.GetComponent<Ant>().mulchBlocksConsumed;
+            fitness += totalNestBlocks;
+
+            return fitness;
         }
     }
 

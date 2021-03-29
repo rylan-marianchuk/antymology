@@ -415,12 +415,14 @@ MonoBehaviour:
   Conatiner_Sphere_Radius: 10
   antsPerColony: 20
   spawnRadius: 8
-  inputGridSize: 7
+  inputGridSize: 11
   coloniesPerWorld: 4
   initialHealth: 100
   healthReduction: 1
-  connectionMutationRate: 0.3
-  nodeMutationRate: 0.2
+  connectionMutationRate: 0.6
+  nodeMutationRate: 0.6
+  AntPheromone: 1.25
+  QueenAntPheromone: 3
   loadTopColony: 0
 --- !u!1 &1503258853
 GameObject:
@@ -462,13 +464,15 @@ MonoBehaviour:
   Conatiner_Sphere_Radius: 20
   antsPerColony: 20
   spawnRadius: 8
-  inputGridSize: 7
+  inputGridSize: 11
   coloniesPerWorld: 4
   initialHealth: 100
   healthReduction: 1
   connectionMutationRate: 0.3
   nodeMutationRate: 0.2
-  loadTopColony: 1
+  AntPheromone: 1.25
+  QueenAntPheromone: 3
+  loadTopColony: 0
 --- !u!4 &1503258855
 Transform:
   m_ObjectHideFlags: 0

@@ -8,6 +8,7 @@ namespace Antymology.Agents
     public class QueenAnt : Ant
     {
         public GameObject nestBlock;
+        
 
         void Awake()
         {

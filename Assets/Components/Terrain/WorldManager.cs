@@ -96,20 +96,22 @@ namespace Antymology.Terrain
             Camera.main.transform.position = new Vector3(0 / 2, Blocks.GetLength(1), 0);
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
-            if (ConfigurationManager.Instance.loadTopColony)
+
+            
+            if (!ConfigurationManager.Instance.loadTopColony)
             {
                 topColony = new Agents.Colony(Deserialize("ant.dat"), Deserialize("queen.dat"));
-            }
-            else
-            {
                 colonies.Add(null);
                 colonies.Add(null);
                 colonies.Add(null);
                 colonies.Add(null);
                 GenerateAnts();
             }
-
-            
+            else
+            {
+                topColony = new Agents.Colony(Deserialize("ant.dat"), Deserialize("queen.dat"));
+            }
+           
         }
 
         void Serialize(Agents.SerializableNS ns, string outFile)
@@ -165,12 +167,13 @@ namespace Antymology.Terrain
         {
             for (short i = 0; i < ConfigurationManager.Instance.coloniesPerWorld; i++)
             {
+                if (colonies[i] == topColony) continue;
                 colonies[i] = new Agents.Colony(i, topColony);
             }
             
         }
         private bool pause = false;
-        private int prevBestNestSize = 0;
+        private float prevBestFitness = 0;
         private void FixedUpdate()
         {
             if (ConfigurationManager.Instance.loadTopColony)
@@ -207,15 +210,15 @@ namespace Antymology.Terrain
             if (allDead)
             {
                 generation++;
-                // TODO Choose the best nervous system to keep
-                int bestNestSize = topColony.getTotalNestBlocks();
+                
+                float bestFitness = topColony.fitness();
                 foreach (Agents.Colony colony in colonies)
                 {
-                    if (colony.getTotalNestBlocks() > bestNestSize)
+                    if (colony.getTotalNestBlocks() > bestFitness)
                     {
                         topColony.DestroyColony();
                         topColony = colony;
-                        bestNestSize = colony.getTotalNestBlocks();
+                        bestFitness = colony.fitness();
                         noNewTopColonySince = generation;
                     }
                 }
@@ -234,11 +237,12 @@ namespace Antymology.Terrain
                 
 
                 Debug.Log("On generation " + generation.ToString() + " the best colony produced " + Mathf.Max(new float[] { colonies[0].getTotalNestBlocks(), colonies[1].getTotalNestBlocks(), colonies[2].getTotalNestBlocks(), colonies[3].getTotalNestBlocks()}).ToString() + " blocks.");
-                Debug.Log("BUT no new top colony since generation " + noNewTopColonySince.ToString() + " with a global best of " + bestNestSize.ToString());
+                Debug.Log("BUT no new top colony since generation " + noNewTopColonySince.ToString() + " with a global best of " + bestFitness.ToString());
+                Debug.Log("Queen of Top Colony size - nodes: " + topColony.queen.GetComponent<Agents.Ant>().getNervousSystem().nodes.Count.ToString() + " connections " + topColony.queen.GetComponent<Agents.Ant>().getNervousSystem().connections.Count.ToString());
 
-                if (bestNestSize > prevBestNestSize)
+                if (bestFitness > prevBestFitness)
                 {
-                    prevBestNestSize = bestNestSize;
+                    prevBestFitness = bestFitness;
                     Serialize(new Agents.SerializableNS(topColony.bestAnt.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "ant.dat");
                     Serialize(new Agents.SerializableNS(topColony.queen.GetComponent<Antymology.Agents.Ant>().getNervousSystem()), "queen.dat");
                 }

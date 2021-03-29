@@ -20,6 +20,7 @@ namespace Antymology.Agents
 
         public int inputGridLength;
 
+        public int innovationNumberNow = 0;
         public NervousSystem(SerializableNS serializableNS)
         {
             this.nodes = new List<Node>();
@@ -34,8 +35,6 @@ namespace Antymology.Agents
                     outputNodes.Add(newN);
 
             }
-
-
 
             foreach (var c in serializableNS.connections)
                 this.connections.Add(new Connection(c.id_in, c.id_out, c.enabled, c.innovationNum));
@@ -149,18 +148,10 @@ namespace Antymology.Agents
             float mulchIntensity = 1f;
             float elseIntensity = 0f;
             float nestIntensity = -0.25f;
-            float tooHighIntensity = -0.75f;
-            // Check if Queen is at this location
-            if (antOn.colony.queen != null && antOn.colony.queen.GetComponent<Ant>().getPosition().x == topDownWorldPos.x && antOn.colony.queen.GetComponent<Ant>().getPosition().z == topDownWorldPos.y)
-                return queenIntensity;
 
-            // Check if other ant is at this location
-            foreach (var ant in this.antOn.colony.colony)
-            {
-                if (ant.GetComponent<Ant>().dead) continue;
-                if (ant.GetComponent<Ant>().getPosition().x == topDownWorldPos.x && ant.GetComponent<Ant>().getPosition().z == topDownWorldPos.y)
-                    return otherAntIntensity;
-            }
+            if (topDownWorldPos.y > 127 || topDownWorldPos.y < 0 || topDownWorldPos.x > 127 || topDownWorldPos.x < 0)
+                return 0;
+            return antOn.colony.pheromoneDeposit[topDownWorldPos.x, topDownWorldPos.y];
 
             
             // Get the top most block
@@ -168,16 +159,6 @@ namespace Antymology.Agents
 
             while (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight, topDownWorldPos.y).GetType() != typeof(Terrain.AirBlock)) { airHeight++; }
 
-            /*
-            int dx = Mathf.Abs(topDownWorldPos.x - antOn.getPosition().x);
-            int dz = Mathf.Abs(topDownWorldPos.y - antOn.getPosition().z);
-            if ((dx == 1 && dz == 0) || (dx == 0 && dz == 1) || (dx == 1 && dz == 1))
-            {
-                // Adjcent block
-                if (airHeight - antOn.getPosition().y > 2)
-                    return tooHighIntensity;
-            }
-            */
 
             // Now check the block right below this air block
             if (Terrain.WorldManager.Instance.GetBlock(topDownWorldPos.x, airHeight-1, topDownWorldPos.y).GetType() == typeof(Terrain.MulchBlock))
