@@ -1,5 +1,28 @@
 # Assignment 3: Antymology
 
+## Introduction
+I have implemented an Evolutionary Algorithm as required to solve a colony optimization problem. The outcome being maximized is nest blocks produced by the queen during its lifetime. The constraints are the described behaviour of the agents outlined below.
+
+The unit of evolution here is the object **Colony**, which consists of 20 **Ants** and one **QueenAnt**. Below is a freshly spawned colony:
+
+![Ants](Images/Ants.gif)
+
+Each **Ant** and **QueenAnt** holds its own *NervousSystem*, a structure which senses its surroundings and produces an output on each time step. This 
+
+The input for the all ants *NervousSystem* is a 9 by 9 square around its local position, where it sits in the centre. Each node takes on the global pheromone deposit. A location (square) will have high pheromone concetrations if an ant has been recently there.
+
+![Ants](Images/ant_terrain.jpg)
+
+Each Nervous System will by modified through evolution to produce emergent behaviour. The way which this has been accomplished is through the following seminal paper:
+
+Stanley, Kenneth O & Miikkulainen, Risto, 2002. Evolving Neural Networks through Augmenting Topologies. *Evolutionary computation*, 10(2), pp.99–127.
+
+The approach to 'Augment Topologies' means to start with no hidden neurons or connections, and incrementally mutate by adding nodes or connections.
+
+![Ants](Images/mutate.png)
+
+## Cooper's Description ------------------------------------
+
 As we\'ve seen in class, ants exhibit very interesting behaviour. From finding the shortest path to building bridges out of bodies ants have evolved to produce complex emergents from very simple rules. For your assignment you will need to create a species of ant which is capable of generating the biggest nest possible.
 
 I have already created the base code you will use for the assignment. Currently the simulation environment is devoid of any dynamic behaviour and exists only as a landscape. You will need to extend the functionality of what I have written in order to produce \"intelligent\" behaviour. Absolutely no behaviour has been added to this project so you are free to implement whatever you want however you want, with only a few stipulations.
