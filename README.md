@@ -3,13 +3,13 @@
 ## Introduction
 I have implemented an Evolutionary Algorithm as required to solve a colony optimization problem. The outcome being maximized is nest blocks produced by the queen during its lifetime. The constraints are the described behaviour of the agents outlined in the assignment description.
 
-The unit of evolution here is the object **Colony**, which consists of 20 **Ants** and one **QueenAnt**. Below is a freshly spawned colony:
+The unit of evolution here is the object **Colony**, which consists of 20 **Ant**'s and one **QueenAnt**. Below is a freshly spawned colony:
 
 ![Ants](Images/colony.PNG)
 
 Each **Ant** and **QueenAnt** holds its own *NervousSystem*, a structure which senses its surroundings and produces an output on each time step. This 
 
-The input for the all ants *NervousSystem* is a 9 by 9 square around its local position, where it sits in the centre. Each node takes on the global pheromone deposit. A location (square) will have high pheromone concetrations if an ant has been recently there.
+The input for the all ants *NervousSystem* is a 9 by 9 square around its local position, where it sits in the centre. Each node takes on an intensity value for that world location. Note that consumption and nest block production was not hardcoded into the ants. Below is a depiction of a regular **Ant** *NervousSystem*. The difference in the **QueenAnt** *NervousSystem* is the null output is replaced with produce nest block, as its the only ant permitted to create it.
 
 ![Ants](Images/ant_terrain.jpg)
 
@@ -36,17 +36,41 @@ What I learned and changed:
 The fitness function was defined as only total nest blocks produced. 4 Colonies were spawned in equal distance apart and on each frame, the Act() function was called on each ant.
 
 The Act() function completes the sensation to motor sequence that any generic nervous system accomplishes. The sense input was prescribed the following values:
-            float queenIntensity = 3.5f;
-            float otherAntIntensity = 2.25f;
-            float mulchIntensity = 1f;
-            float elseIntensity = 0f;
-            float nestIntensity = -0.25f;
+
+            - float queenIntensity = 3.5f;
+            
+            - float otherAntIntensity = 2.25f;
+            
+            - float mulchIntensity = 1f;
+            
+            - float elseIntensity = 0f;
+            
+            - float nestIntensity = -0.25f;
+            
 where a location recieved that value if it held a queen, other ant, mulch block, nest block, etc. Given only these values from the input layer the *NervousSystem* was computed, and the max of the six output nodes were taken as a motor decision. 
 
 **Best Fitness** : 13
 **Total Generations** : 250
 
-### Attempt 1
+Note that I could not go over 250 generations here without Unity crashing unexpectedly.
+
+When looking at the top colony after reloading, the production of nest blocks is highly dependent on circumstance, meaning the 13 blocks produced were due to sheer luck. What I mean by this is that The **Ant** *NervousSystem* is not yet producing emergent intelligent behviour, but is rather still random. On this generation it just so happened that the **QueenAnt** consumed the proper mulch and exchanged health with a sufficient number of **Ants** by chance to produce 13 distinct nest blocks. This can ber verfied by looking at the Colony in a new location, where it does not produce 13 nest blocks.
+
+### Attempt 2
+
+In hopes of achieving better results I made the following modifications:
+
+- Sense input to each *NervousSystem* was solely pheromones. Each location in the world had a global pheromone conentration that decayed over time, but would replenish with a new ant on it.
+- Instead of a single topColony used to parent each generation, I kept a BestQueen and BestAnt *NervousSystem*. The BestAnt had its own fitness function, distinct from the queen. I defined an **Ant**  to be more fit if it spent greater time on the exact same location as the **QueenAnt**. In this way I was pushing for *behvioural modularization* by hardcoding this type of fitness, I thought it would save the entire colony of learning that exchanging health with the queen would be beneficial.
+
+After running with these new updated features overnight, I woke up to the following screen:
+
+![Ants](Images/final_results.PNG)
+
+**Best Fitness* ** : 15.4
+**Total Generations** : 4993
+
+I acheived almost 5000 generations without crashing and the overall fitness score here is a combination of nest blocks produced + 1/4 * times an Ant touched Queen.
 
 
 ## Cooper's Description ------------------------------------
